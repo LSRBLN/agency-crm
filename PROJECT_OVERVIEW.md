@@ -1,70 +1,135 @@
-# 🚀 AI Agency CRM — Project Overview
+# Agency CRM — "Einnahme-Maschine" für Berlin Wedding
 
-Comprehensive status, feature overview, and technical architecture of the AI Agency CRM.
+## Übersicht
+Ein KI-gestütztes CRM-System, das lokale Unternehmen in Berlin Wedding dabei unterstützt, in der Ära der KI-Suche (Gemini, ChatGPT, Siri) sichtbar zu werden. Positionierung als **Validierungs-Spezialist**, nicht als Webdesigner.
 
-## 📊 Status Summary
-| Component | Status | URL |
-|---|---|---|
-| **Frontend** | ✅ Live (Deploying) | [agency-crm-frontend](https://agency-crm-frontend-ahhrh3ebb7azbpdc.germanywestcentral-01.azurewebsites.net) |
-| **Backend** | ✅ Live & Connected | [agency-crm-backend](https://agency-crm-backend-a0d7e2cee4fchnbv.germanywestcentral-01.azurewebsites.net) |
-| **Database** | ✅ Connected (Atlas) | `Cluster0` (Verified via URI fix) |
-| **Deployment** | ✅ Automated | GitHub Actions (CI/CD) |
-
----
-
-## 🛠️ Key Features
-
-### 1. Lead Management (Module 1)
-- **Bulk Import**: Support for Manis AI CSV exports.
-- **AI Scoring**: Priority badges (>50% direct traffic = High Priority).
-- **Filtering**: Search and filter by revenue, source, and priority.
-
-### 2. AI Trust Audit Generator (Module 2)
-- **Visibility Scorecard**: 0–100% score based on GBP, reviews, and AEO.
-- **GBP Audit**: Automatic check for profile claiming.
-- **Review Analysis**: Analysis of owner response rates.
-- **AEO Simulation**: Simulated AI search query results (powered by Gemini API).
-
-### 3. "AI Guilt" Outreach Engine (Module 3)
-- **Dynamic Templates**: Smart email drafting with variable interpolation.
-- **Auto-Triggers**: Automatic draft creation upon audit completion.
-- **Stripe Integration**: Direct links for setup fee invoicing.
-
-### 4. Client Portal (Module 4)
-- **Secure Access**: JWT-based login/registration.
-- **Strategy Tracker**: Interactive checklist for Local Authority, Structured Data, and Brand Sentiment.
+## Tech-Stack
+- **Frontend:** React + Vite + Tailwind CSS
+- **Backend:** Node.js + Express
+- **Datenbank:** MongoDB (Mongoose)
+- **KI:** Google Gemini 2.5 Flash (via @google/generative-ai)
+- **Payments:** Stripe Checkout
+- **Email:** Nodemailer (SMTP)
+- **Google APIs:** Sheets, Calendar (googleapis)
+- **Monitoring:** Datadog (dd-trace)
+- **Secrets:** Doppler SDK (optional)
+- **Deployment:** Docker + Google Cloud Run
 
 ---
 
-## 🧱 Technical Architecture
+## Feature-Übersicht nach Kategorien
 
-- **Frontend**: React (Vite) + Tailwind CSS + Lucide Icons.
-- **Backend**: Node.js + Express + Mongoose.
-- **Security**: JWT Authentication + Bcrypt password hashing.
-- **Deployment**: 
-  - Azure App Service (Linux B1/Free).
-  - GitHub Actions for automated Build/Deploy.
-  - Azure CLI for remote management.
+### 1. Agentische Fulfillment-Erweiterungen
+
+| Feature | Service | Status |
+|---------|---------|--------|
+| **Persistent Tracks (Conductor)** | `conductorService.js` | ✅ Dynamische Markdown-Dateien pro Kunde mit Tech-Stack, Design-Regeln, Marken-DNA, Audit-Historie |
+| **Stitch Loop Skill (MCP)** | `stitchService.js` | ✅ Template-basierter Design-Varianten-Generator mit Gemini, MCP-Ressourcen-Listing, Auto-Save |
+| **Brownfield-Support** | `brownfieldService.js` | ✅ Echtes HTML-Fetching + Gemini-Analyse für AEO, Performance, CRO, Local SEO |
+
+**API-Endpunkte:**
+- `POST /api/stitch/generate-variant` — Variante aus Quell-Template generieren
+- `GET /api/stitch/templates` — Alle Templates auflisten
+- `GET /api/stitch/mcp/resources` — MCP-Ressourcen-Listing
+
+### 2. Psychologische Sales-Hebel & Tiefe Analyse
+
+| Feature | Service/Route | Status |
+|---------|---------------|--------|
+| **Maps Grounding Scorecard** | `audits.js` | ✅ Gemini + Google Search Grounding für GBP, Rezensionen, Schema.org |
+| **SimilarWeb Traffic Gap** | `leads.js` | ✅ SimilarWeb API mit Gemini-Fallback für Wettbewerber-Traffic-Vergleich |
+| **AEO-Simulation** | `aeoService.js` | ✅ Standalone-Endpoint + Audit-Integration, Score + Reasoning |
+
+**API-Endpunkte:**
+- `POST /api/audits/aeo-simulate` — Standalone AEO-Simulation
+- `GET /api/leads/:id/competition` — Wettbewerber-Traffic-Analyse
+
+**Frontend:**
+- `/aeo-simulator` — Interaktiver AEO-Simulator mit Query-Eingabe und Score-Anzeige
+- `/scorecard/:id` — Öffentliche Scorecard mit dynamischem Wettbewerber-Balkendiagramm
+
+### 3. KI-Content- & Reputations-Systeme
+
+| Feature | Service | Status |
+|---------|---------|--------|
+| **Pomelli DNA-Scanner** | `pomelliService.js` | ✅ Gemini-basierte Marken-DNA-Extraktion (Farben, Fonts, Voice, Content-Strategie) |
+| **VEO-Video-Pipeline** | `veoService.js` | ✅ Gemini-generiertes Storyboard (4 Szenen, Script, Hashtags) — VEO API pending |
+| **Review-Request-Engine** | `reputationService.js` | ✅ Gemini-generierte keyword-reiche Templates + Nodemailer-Versand |
+
+**API-Endpunkte:**
+- `POST /api/reputation/blast` — Review-Blast mit Keyword-Templates versenden
+
+### 4. Client-Value & Reporting
+
+| Feature | Service | Status |
+|---------|---------|--------|
+| **NotebookLM Audio** | `notebookService.js` | ✅ Gemini-generiertes Podcast-Script (2 Hosts, Transcript, Key Insights) — Audio API pending |
+| **Workspace Studio** | `workspaceService.js` | ✅ Google Sheets Lead-Logging + Calendar-Einladungen (mit Fallback) |
+
+### 5. Infrastruktur-Optimierung
+
+| Feature | Datei | Status |
+|---------|-------|--------|
+| **Doppler Secrets** | `utils/secrets.js` | ✅ SDK-Integration mit process.env Fallback |
+| **Datadog Monitoring** | `utils/datadog.js` | ✅ dd-trace Init + Custom Metrics + Error Tracking |
+| **Cloud Run Deployment** | `deploy_gcp.sh` | ✅ Docker + gcloud mit Secret Manager Integration |
+| **Stripe Payments** | `routes/stripe.js` | ✅ Checkout Sessions + Webhook-Handling |
 
 ---
 
-## ⚙️ Environment Configuration
+## Neue Frontend-Seiten
 
-| Variable | Description | Source |
-|---|---|---|
-| `MONGODB_URI` | Connection string for Atlas | Secured in Azure |
-| `JWT_SECRET` | Signing key for tokens | Secured in Azure |
-| `GEMINI_API_KEY` | AI Analysis Engine | Secured in Azure |
-| `FRONTEND_URL` | CORS & Email Links | Secured in Azure |
+| Route | Seite | Beschreibung |
+|-------|-------|-------------|
+| `/aeo-simulator` | AEOSimulator.jsx | Interaktiver AEO-Test mit Score-Visualisierung |
+| `/scorecard/:id` | ScorecardView.jsx | Öffentliche Scorecard mit dynamischen Wettbewerber-Daten |
+| `/audit/:id` | AuditDetail.jsx | Detailansicht mit Brownfield-Analyse |
+| `/outreach` | Outreach.jsx | E-Mail-Drafts mit Senden-Funktion |
+| `/stitch` | (Sidebar-Link) | Stitch Templates Verwaltung |
+
+---
+
+## Umgebungsvariablen
+
+Siehe `.env.example` für alle benötigten Variablen:
+
+| Variable | Zweck | Erforderlich |
+|----------|-------|-------------|
+| `MONGODB_URI` | Datenbank | ✅ |
+| `GEMINI_API_KEY` | KI-Funktionen | ✅ |
+| `JWT_SECRET` | Auth | ✅ |
+| `STRIPE_SECRET_KEY` | Zahlungen | Optional |
+| `SIMILARWEB_API_KEY` | Traffic-Daten | Optional (Gemini-Fallback) |
+| `SMTP_USER` / `SMTP_PASS` | E-Mail-Versand | Optional |
+| `GOOGLE_SERVICE_ACCOUNT_KEY` | Sheets/Calendar | Optional |
+| `GOOGLE_SHEET_ID` | Lead-Logging | Optional |
+| `DOPPLER_TOKEN` | Secret Management | Optional |
+| `DATADOG_API_KEY` | Monitoring | Optional |
 
 ---
 
-- [x] **Agentic Stack**: Project Tracks (Conductor), Website Analysis (Brownfield), and Stitch MCP Trigger.
-- [x] **Competitive Analysis**: SimilarWeb traffic gaps and visual comparison dashboards.
-- [x] **Audit Payments**: One-click Stripe links for 500€ audit fees.
-- [x] **Reputation Engine**: Automated Google review requests (Review Blast).
-- [x] **Client Magnete**: AEO-Simulation tool and AI Podcasts (NotebookLM).
-- [x] **Infrastructure**: Doppler Secret Management & Datadog monitoring.
+## Setup
 
----
-*Generated by Antigravity on 2026-02-20*
+```bash
+# Backend
+cd agency-crm/server
+npm install
+cp ../.env.example ../.env  # Variablen ausfüllen
+npm start
+
+# Frontend
+cd agency-crm/client
+npm install
+npm run dev
+```
+
+## Deployment
+
+```bash
+# Google Cloud Run
+cd agency-crm
+chmod +x deploy_gcp.sh
+./deploy_gcp.sh
+```
+
+Secrets müssen vorher in Google Secret Manager angelegt werden (siehe deploy_gcp.sh Kommentare).

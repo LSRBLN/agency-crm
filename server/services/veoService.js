@@ -1,20 +1,57 @@
 /**
  * VEO-Video-Pipeline Service
- * Generates automated short videos for Instagram Reels/TikTok based on brand DNA.
+ * Generates automated short video storyboards for Instagram Reels/TikTok based on brand DNA.
+ * Uses Gemini to produce a storyboard (VEO video API not yet publicly available).
  */
-const generateBrandVideo = async (companyName, dna) => {
-    console.log(`[VEO] Generating video for ${companyName} using colors ${dna.primaryColor} and brand voice "${dna.brandVoice}"`);
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-    // In a real implementation, this would call the Google VEO API
-    // and return a URL to the generated video asset.
+async function generateBrandVideo(businessName, brandDNA) {
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+        // Use Gemini to generate a video script/storyboard
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-    return {
-        videoUrl: `https://storage.googleapis.com/veo-assets/generated/${companyName.toLowerCase().replace(/\s+/g, '-')}-reel.mp4`,
-        status: 'completed',
-        previewImage: 'https://via.placeholder.com/1080x1920?text=VEO+Video+Preview'
-    };
-};
+        const prompt = `Du bist ein Social-Media-Video-Experte. Erstelle ein detailliertes Storyboard für ein 15-Sekunden Instagram Reel / TikTok Video für "${businessName}".
+    
+    Marken-DNA: ${JSON.stringify(brandDNA)}
+    
+    Antworte als JSON:
+    {
+      "title": "Video-Titel",
+      "script": "Sprechertext (max 30 Wörter)",
+      "scenes": [
+        {"timestamp": "0-3s", "visual": "Beschreibung", "text_overlay": "Text"},
+        {"timestamp": "3-7s", "visual": "Beschreibung", "text_overlay": "Text"},
+        {"timestamp": "7-12s", "visual": "Beschreibung", "text_overlay": "Text"},
+        {"timestamp": "12-15s", "visual": "Beschreibung", "text_overlay": "CTA Text"}
+      ],
+      "music_style": "Musikstil-Empfehlung",
+      "hashtags": ["#tag1", "#tag2", "#tag3"]
+    }`;
+
+        const result = await model.generateContent(prompt);
+        const text = result.response.text();
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        const storyboard = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+
+        return {
+            status: 'storyboard_ready',
+            storyboard,
+            videoUrl: null, // VEO API not yet available - storyboard ready for manual production
+            thumbnailPrompt: `Professional brand video thumbnail for ${businessName}, ${brandDNA?.primaryColor || 'blue'} color scheme, modern design`,
+            generatedAt: new Date().toISOString()
+        };
+    } catch (error) {
+        console.error('[VEO] Error generating storyboard:', error.message);
+        return {
+            status: 'error',
+            storyboard: null,
+            videoUrl: null,
+            error: error.message,
+            generatedAt: new Date().toISOString()
+        };
+    }
+}
 
 module.exports = { generateBrandVideo };

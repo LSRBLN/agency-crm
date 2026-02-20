@@ -8,6 +8,7 @@ const outreachSchema = new mongoose.Schema({
     subject: { type: String, default: '' },
     body: { type: String, default: '' },
     status: { type: String, enum: ['draft', 'sent', 'failed'], default: 'draft' },
+    sentAt: { type: Date },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Outreach', outreachSchema);

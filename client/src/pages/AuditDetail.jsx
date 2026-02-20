@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import ScoreGauge from '../components/ScoreGauge'
-import { ArrowLeft, RefreshCw, CheckCircle2, XCircle, HelpCircle, Mail, ExternalLink, TrendingUp } from 'lucide-react'
+import { ArrowLeft, RefreshCw, CheckCircle2, XCircle, HelpCircle, Mail, ExternalLink, TrendingUp, Code2, Gauge, Search, ShoppingCart, MapPin, ListChecks, CheckCircle } from 'lucide-react'
 
 export default function AuditDetail() {
     const { id } = useParams()
@@ -173,6 +173,126 @@ export default function AuditDetail() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Brownfield-Analyse */}
+                    {audit.details?.brownfieldAnalysis && (
+                        <div className="glass-card p-6 border-l-4 border-l-amber-500">
+                            <h2 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
+                                <Code2 className="w-5 h-5 text-amber-400" />
+                                Brownfield-Analyse
+                                {audit.details.brownfieldAnalysis.htmlAnalyzed && (
+                                    <span className="ml-2 text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-medium">HTML analysiert</span>
+                                )}
+                            </h2>
+                            <p className="text-gray-400 text-sm mb-4">Technische Bestandsaufnahme der bestehenden Website.</p>
+
+                            {/* Tech Stack */}
+                            {audit.details.brownfieldAnalysis.techStack && (
+                                <div className="mb-4 p-4 bg-surface-800/60 rounded-xl">
+                                    <h3 className="text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+                                        <Code2 className="w-4 h-4 text-brand-400" />
+                                        Tech Stack
+                                    </h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {audit.details.brownfieldAnalysis.techStack.framework && (
+                                            <span className="text-xs bg-brand-500/20 text-brand-300 px-2 py-1 rounded-lg">
+                                                Framework: {audit.details.brownfieldAnalysis.techStack.framework}
+                                            </span>
+                                        )}
+                                        {audit.details.brownfieldAnalysis.techStack.cms && (
+                                            <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded-lg">
+                                                CMS: {audit.details.brownfieldAnalysis.techStack.cms}
+                                            </span>
+                                        )}
+                                        {audit.details.brownfieldAnalysis.techStack.libraries?.map((lib, i) => (
+                                            <span key={i} className="text-xs bg-white/10 text-gray-300 px-2 py-1 rounded-lg">{lib}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Score Grid */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                                {[
+                                    { label: 'Performance', score: audit.details.brownfieldAnalysis.performanceScore, icon: Gauge, color: 'text-blue-400' },
+                                    { label: 'AEO', score: audit.details.brownfieldAnalysis.aeoScore, icon: Search, color: 'text-brand-400' },
+                                    { label: 'CRO', score: audit.details.brownfieldAnalysis.croScore, icon: ShoppingCart, color: 'text-emerald-400' },
+                                    { label: 'Local SEO', score: audit.details.brownfieldAnalysis.localSeoScore, icon: MapPin, color: 'text-amber-400' },
+                                ].map(({ label, score, icon: Icon, color }) => score != null && (
+                                    <div key={label} className="bg-surface-800/60 rounded-xl p-3 text-center">
+                                        <Icon className={`w-4 h-4 ${color} mx-auto mb-1`} />
+                                        <div className={`text-2xl font-bold ${score >= 70 ? 'text-emerald-400' : score >= 40 ? 'text-amber-400' : 'text-rose-400'}`}>
+                                            {score}
+                                        </div>
+                                        <div className="text-xs text-gray-500">{label}</div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Issues & Recommendations */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                                {audit.details.brownfieldAnalysis.performanceIssues?.length > 0 && (
+                                    <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+                                        <p className="text-xs font-bold text-rose-400 uppercase mb-2">Performance Issues</p>
+                                        <ul className="space-y-1">
+                                            {audit.details.brownfieldAnalysis.performanceIssues.map((issue, i) => (
+                                                <li key={i} className="text-xs text-gray-300 flex items-start gap-1">
+                                                    <XCircle className="w-3 h-3 text-rose-400 mt-0.5 flex-shrink-0" />
+                                                    {issue}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                                {audit.details.brownfieldAnalysis.performanceRecommendations?.length > 0 && (
+                                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                                        <p className="text-xs font-bold text-emerald-400 uppercase mb-2">Empfehlungen</p>
+                                        <ul className="space-y-1">
+                                            {audit.details.brownfieldAnalysis.performanceRecommendations.map((rec, i) => (
+                                                <li key={i} className="text-xs text-gray-300 flex items-start gap-1">
+                                                    <CheckCircle className="w-3 h-3 text-emerald-400 mt-0.5 flex-shrink-0" />
+                                                    {rec}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* AEO Schema */}
+                            {(audit.details.brownfieldAnalysis.existingSchemaTypes?.length > 0 || audit.details.brownfieldAnalysis.missingSchemaTypes?.length > 0) && (
+                                <div className="p-3 bg-surface-800/60 rounded-xl mb-4">
+                                    <p className="text-xs font-bold text-brand-400 uppercase mb-2">Schema Markup</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {audit.details.brownfieldAnalysis.existingSchemaTypes?.map((s, i) => (
+                                            <span key={i} className="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full">✓ {s}</span>
+                                        ))}
+                                        {audit.details.brownfieldAnalysis.missingSchemaTypes?.map((s, i) => (
+                                            <span key={i} className="text-xs bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full">✗ {s}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Priority Actions */}
+                            {audit.details.brownfieldAnalysis.priorityActions?.length > 0 && (
+                                <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                                    <p className="text-xs font-bold text-amber-400 uppercase mb-2 flex items-center gap-1">
+                                        <ListChecks className="w-3.5 h-3.5" />
+                                        Priority Actions
+                                    </p>
+                                    <ol className="space-y-1">
+                                        {audit.details.brownfieldAnalysis.priorityActions.map((action, i) => (
+                                            <li key={i} className="text-xs text-gray-300 flex items-start gap-2">
+                                                <span className="text-amber-400 font-bold flex-shrink-0">{i + 1}.</span>
+                                                {action}
+                                            </li>
+                                        ))}
+                                    </ol>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Actions */}
                     <div className="flex flex-col sm:flex-row gap-3 items-center">

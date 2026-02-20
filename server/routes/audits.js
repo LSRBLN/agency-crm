@@ -8,6 +8,32 @@ const router = express.Router();
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
+// Standalone AEO Simulation - test how AI models respond to specific queries
+router.post('/aeo-simulate', auth, async (req, res) => {
+    try {
+        const { query, businessName, location } = req.body;
+        if (!query) return res.status(400).json({ error: 'query is required' });
+
+        const { simulateAEO } = require('../services/aeoService');
+        const result = await simulateAEO(
+            query,
+            businessName || 'Test Business',
+            location || 'Berlin Wedding'
+        );
+
+        res.json({
+            success: true,
+            query,
+            businessName: businessName || 'Test Business',
+            location: location || 'Berlin Wedding',
+            result,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Get all audits
 router.get('/', auth, async (req, res) => {
     try {
@@ -29,7 +55,7 @@ router.get('/lead/:leadId', auth, async (req, res) => {
     }
 });
 
-const { createTrack } = require('../services/conductorService');
+const { createTrack, updateTrack } = require('../services/conductorService');
 const { analyzeWebsite } = require('../services/brownfieldService');
 const { scanBusinessDNA } = require('../services/pomelliService');
 const { simulateAEO } = require('../services/aeoService');
@@ -46,11 +72,17 @@ router.post('/', auth, async (req, res) => {
         if (!lead) return res.status(404).json({ error: 'Lead nicht gefunden' });
 
         // Agentic Stack: Create/Update Track
-        await createTrack(leadId, {
-            companyName: lead.companyName,
-            techStack: 'React / Tailwind (Target)',
-            designRules: 'Premium, Modern, Dark Mode prioritized',
-            goals: 'Increase local visibility by 300% via AEO'
+        await createTrack(lead._id.toString(), {
+            businessName: lead.businessName,
+            location: lead.city || 'Berlin Wedding',
+            industry: lead.industry,
+            websiteUrl: lead.websiteUrl,
+            contactName: lead.contactName,
+            email: lead.email,
+            techStack: lead.techStack || 'Noch nicht analysiert',
+            designRules: lead.designRules || 'Noch nicht definiert',
+            brandDNA: lead.businessDNA,
+            goals: lead.goals
         });
 
         // Brownfield Support: Analyze existing site if available
@@ -175,6 +207,10 @@ router.post('/', auth, async (req, res) => {
             brandVoice: businessDNA.brandVoice
         };
         await audit.save();
+
+        await updateTrack(lead._id.toString(), 'audit',
+            `- Score: ${audit.overallScore}/100\n- GBP: ${audit.gbpClaimed ? '✅' : '❌'}\n- AEO: ${audit.aeoProof?.score || 'N/A'}/100\n- Status: Completed`
+        );
 
         console.log(`[POMELLI] DNA Profile for ${lead.companyName}:`, businessDNA);
         console.log(`[AEO SIM] Proof for ${lead.companyName}:`, aeoProof);

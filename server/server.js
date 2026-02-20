@@ -12,6 +12,7 @@ const auditRoutes = require('./routes/audits');
 const outreachRoutes = require('./routes/outreach');
 const portalRoutes = require('./routes/portal');
 const stripeRoutes = require('./routes/stripe');
+const stitchRoutes = require('./routes/stitch');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -28,6 +29,7 @@ app.use('/api/outreach', outreachRoutes);
 app.use('/api/reputation', require('./routes/reputation'));
 app.use('/api/portal', portalRoutes);
 app.use('/api/stripe', stripeRoutes);
+app.use('/api/stitch', stitchRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

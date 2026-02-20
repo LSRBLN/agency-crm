@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import {
-    LayoutDashboard, Users, ShieldCheck, Mail, Globe, ChevronLeft, ChevronRight, LogOut, Zap
+    LayoutDashboard, Users, ShieldCheck, Mail, Globe, ChevronLeft, ChevronRight, LogOut, Zap, Layers, Search
 } from 'lucide-react'
 
 const navItems = [
@@ -8,6 +8,8 @@ const navItems = [
     { to: '/leads', label: 'Leads', icon: Users },
     { to: '/outreach', label: 'Outreach', icon: Mail },
     { to: '/portal', label: 'Client Portal', icon: Globe },
+    { to: '/stitch', label: 'Stitch Templates', icon: Layers },
+    { to: '/aeo-simulator', label: 'AEO Simulator', icon: Search },
 ]
 
 export default function Sidebar({ open, onToggle, onLogout }) {

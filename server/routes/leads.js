@@ -4,7 +4,7 @@ const csv = require('csv-parser');
 const fs = require('fs');
 const Lead = require('../models/Lead');
 const auth = require('../middleware/auth');
-const axios = require('axios'); // For SimilarWeb API calls
+const axios = require('axios'); // Used for SimilarWeb API calls
 const router = express.Router();
 
 const upload = multer({ dest: 'uploads/' });
@@ -162,32 +162,106 @@ router.post('/upload-metrics', auth, upload.single('file'), (req, res) => {
         });
 });
 
-// Get competition data (SimilarWeb Mock/Implementation)
+// GET /:id/competition - Real SimilarWeb integration with Gemini fallback
 router.get('/:id/competition', auth, async (req, res) => {
     try {
         const lead = await Lead.findById(req.params.id);
-        if (!lead) return res.status(404).json({ error: 'Lead nicht gefunden' });
+        if (!lead) return res.status(404).json({ error: 'Lead not found' });
 
-        // Mock SimilarWeb Data for top competitors
-        // In production, this would call the SimilarWeb API
-        const competitors = [
-            { name: 'Top Competitor A', traffic: (lead.monthlyVisitors || 1000) * 8.5, growth: '24%' },
-            { name: 'Top Competitor B', traffic: (lead.monthlyVisitors || 1000) * 5.2, growth: '12%' },
-            { name: 'Top Competitor C', traffic: (lead.monthlyVisitors || 1000) * 3.1, growth: '-5%' },
-        ];
+        const domain = lead.websiteUrl ? new URL(lead.websiteUrl.startsWith('http') ? lead.websiteUrl : `https://${lead.websiteUrl}`).hostname : null;
+
+        // Try SimilarWeb API first
+        if (process.env.SIMILARWEB_API_KEY && domain) {
+            try {
+                const swResponse = await axios.get(
+                    `https://api.similarweb.com/v1/website/${domain}/total-traffic-and-engagement/visits`,
+                    {
+                        params: {
+                            api_key: process.env.SIMILARWEB_API_KEY,
+                            start_date: '2024-01',
+                            end_date: '2024-12',
+                            country: 'de',
+                            granularity: 'monthly',
+                            main_domain_only: false
+                        },
+                        timeout: 10000
+                    }
+                );
+
+                const monthlyVisits = swResponse.data?.visits || [];
+                const avgMonthly = monthlyVisits.length > 0
+                    ? Math.round(monthlyVisits.reduce((sum, v) => sum + (v.visits || 0), 0) / monthlyVisits.length)
+                    : 0;
+
+                return res.json({
+                    source: 'similarweb',
+                    lead: { name: lead.businessName, domain, monthlyVisitors: avgMonthly },
+                    competitors: [], // Would need separate competitor domain lookups
+                    rawData: swResponse.data
+                });
+            } catch (swError) {
+                console.warn('[SIMILARWEB] API call failed:', swError.message);
+                // Fall through to Gemini estimation
+            }
+        }
+
+        // Gemini-based competitor traffic estimation
+        const { GoogleGenerativeAI } = require('@google/generative-ai');
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+        const prompt = `Du bist ein lokaler SEO-Experte für Berlin Wedding. Schätze den monatlichen Website-Traffic für folgendes Unternehmen und seine Top-3-Wettbewerber:
+
+Unternehmen: ${lead.businessName}
+Branche: ${lead.industry || 'Lokal'}
+Standort: Berlin Wedding
+Website: ${lead.websiteUrl || 'Keine'}
+
+Antworte als JSON:
+{
+  "lead": {
+    "name": "${lead.businessName}",
+    "estimatedMonthlyVisitors": number,
+    "organicShare": number (0-100),
+    "directShare": number (0-100)
+  },
+  "competitors": [
+    {
+      "name": "Wettbewerber 1",
+      "estimatedMonthlyVisitors": number,
+      "organicShare": number,
+      "advantage": "Warum sie mehr Traffic haben"
+    },
+    {
+      "name": "Wettbewerber 2",
+      "estimatedMonthlyVisitors": number,
+      "organicShare": number,
+      "advantage": "Warum sie mehr Traffic haben"
+    },
+    {
+      "name": "Wettbewerber 3",
+      "estimatedMonthlyVisitors": number,
+      "organicShare": number,
+      "advantage": "Warum sie mehr Traffic haben"
+    }
+  ],
+  "trafficGapAnalysis": "Kurze Analyse warum der Lead weniger Traffic hat",
+  "recommendations": ["Empfehlung 1", "Empfehlung 2"]
+}`;
+
+        const result = await model.generateContent(prompt);
+        const text = result.response.text();
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        const estimation = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
 
         res.json({
-            lead: {
-                name: lead.companyName,
-                traffic: lead.monthlyVisitors || 0,
-                directPct: lead.directTrafficPct || 0,
-                organicPct: lead.organicTrafficPct || 0
-            },
-            competitors,
-            gapSummary: `Ihr größter Wettbewerber hat ${Math.round((competitors[0].traffic / (lead.monthlyVisitors || 1)))}x mehr Traffic als Sie.`
+            source: 'gemini_estimation',
+            ...estimation,
+            disclaimer: 'Traffic-Daten sind KI-basierte Schätzungen. Für exakte Daten wird ein SimilarWeb API-Key benötigt.'
         });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+    } catch (error) {
+        console.error('[COMPETITION] Error:', error.message);
+        res.status(500).json({ error: error.message });
     }
 });
 

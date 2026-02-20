@@ -5,10 +5,11 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 /**
  * Simulates an AEO (AI Search) query to see if a business appears in results.
  */
-const simulateAEO = async (query, companyName) => {
+const simulateAEO = async (query, companyName, location) => {
+    const locationContext = location ? ` in ${location}` : '';
     const prompt = `Simuliere eine KI-gestützte Suchanfrage (z.B. Google Gemini oder ChatGPT): "${query}"
     
-    Erscheint das Unternehmen "${companyName}" unter den Top-Empfehlungen?
+    Erscheint das Unternehmen "${companyName}"${locationContext} unter den Top-Empfehlungen?
     Analysiere die aktuelle Sichtbarkeit und gib einen Score (0-100) sowie eine kurze Begründung aus.
     
     Format (JSON):

@@ -7,6 +7,7 @@ import Outreach from './pages/Outreach'
 import ClientPortal from './pages/ClientPortal'
 import Login from './pages/Login'
 import ScorecardView from './pages/ScorecardView'
+import AEOSimulator from './pages/AEOSimulator'
 import { useState, useEffect } from 'react'
 
 function ProtectedRoute({ children, token }) {
@@ -40,6 +41,7 @@ export default function App() {
                         <Route path="/audit/:id" element={<ProtectedRoute token={token}><AuditDetail /></ProtectedRoute>} />
                         <Route path="/outreach" element={<ProtectedRoute token={token}><Outreach /></ProtectedRoute>} />
                         <Route path="/portal" element={<ProtectedRoute token={token}><ClientPortal /></ProtectedRoute>} />
+                        <Route path="/aeo-simulator" element={<ProtectedRoute token={token}><AEOSimulator /></ProtectedRoute>} />
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                 </main>

@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom'
 import axios from 'axios'
 import { ShieldCheck, MapPin, Zap, MessageSquare, AlertTriangle, CheckCircle, Smartphone, BarChart3, Mail, Play, Video } from 'lucide-react'
 
+const API = import.meta.env.VITE_API_URL || ''
+
 export default function ScorecardView() {
     const { id } = useParams()
     const [data, setData] = useState(null)
@@ -10,6 +12,7 @@ export default function ScorecardView() {
     const [error, setError] = useState('')
     const [blasting, setBlasting] = useState(false)
     const [blastStatus, setBlastStatus] = useState(null)
+    const [competitionData, setCompetitionData] = useState(null)
 
     const token = localStorage.getItem('token')
     const headers = { Authorization: `Bearer ${token}` }
@@ -26,6 +29,24 @@ export default function ScorecardView() {
                 setLoading(false)
             })
     }, [id])
+
+    // Fetch competition data once audit data is loaded
+    useEffect(() => {
+        if (data?.leadId) {
+            const leadId = data.leadId?._id || data.leadId
+            try {
+                const tok = localStorage.getItem('token')
+                fetch(`${API}/api/leads/${leadId}/competition`, {
+                    headers: { Authorization: `Bearer ${tok}` }
+                })
+                    .then(r => r.json())
+                    .then(d => setCompetitionData(d))
+                    .catch(err => console.warn('Competition data not available:', err))
+            } catch (err) {
+                console.warn('Competition data not available:', err)
+            }
+        }
+    }, [data])
 
     async function handleReviewBlast() {
         setBlasting(true)
@@ -67,6 +88,27 @@ export default function ScorecardView() {
     }
 
     const isLowScore = data.totalScore < 50;
+
+    // Build competitor list: use API data if available, otherwise fall back to static data
+    const staticCompetitors = [
+        { name: 'Konkurrent #1 (Wedding)', traffic: 8500, color: 'bg-brand-500' },
+        { name: 'Konkurrent #2 (Wedding)', traffic: 6200, color: 'bg-brand-400' },
+        { name: 'Konkurrent #3 (Wedding)', traffic: 4800, color: 'bg-brand-300' },
+        { name: 'Ihr Unternehmen', traffic: 800, color: 'bg-rose-500' },
+    ]
+
+    const barColors = ['bg-brand-500', 'bg-brand-400', 'bg-brand-300', 'bg-brand-200']
+    const dynamicCompetitors = competitionData?.competitors
+        ? competitionData.competitors.map((c, i) => ({
+            name: c.name,
+            traffic: c.estimatedMonthlyVisitors ?? c.traffic ?? 0,
+            color: c.isClient ? 'bg-rose-500' : (barColors[i] || 'bg-brand-300'),
+            isClient: c.isClient,
+        }))
+        : null
+
+    const competitorList = dynamicCompetitors || staticCompetitors
+    const maxTraffic = Math.max(...competitorList.map(c => c.traffic), 1)
 
     return (
         <div className="min-h-screen bg-[#0B0D17] text-white p-4 sm:p-8 font-sans selection:bg-brand-500/30">
@@ -214,6 +256,12 @@ export default function ScorecardView() {
                                 <p className="text-xs text-brand-300 uppercase font-bold mb-1">Brand Voice</p>
                                 <p className="text-sm">{data.businessDNA.brandVoice}</p>
                             </div>
+                            {data.businessDNA.contentStrategy && (
+                                <div className="col-span-2 p-3 bg-white/5 rounded-lg border border-white/10">
+                                    <p className="text-xs text-brand-300 uppercase font-bold mb-1">Content Strategy</p>
+                                    <p className="text-sm text-gray-300">{data.businessDNA.contentStrategy}</p>
+                                </div>
+                            )}
                         </div>
                     </section>
                 )}
@@ -226,16 +274,73 @@ export default function ScorecardView() {
                             <Play className="w-5 h-5 text-brand-400" />
                             Audio Visibility Report
                         </h3>
-                        <p className="text-gray-400 text-sm mb-6">Ein interaktiver AI-Podcast über Ihre Sichtbarkeit.</p>
-                        <a
-                            href={data.audioOverviewUrl || '#'}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2 w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all"
-                        >
-                            <Play className="w-4 h-4 fill-current" />
-                            <span className="font-bold">Podcast anhören</span>
-                        </a>
+                        <p className="text-gray-400 text-sm mb-4">Ein interaktiver AI-Podcast über Ihre Sichtbarkeit.</p>
+
+                        {data.details?.podcast ? (
+                            <div className="space-y-3">
+                                {/* Key Insights */}
+                                {data.details.podcast.keyInsights?.length > 0 && (
+                                    <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                                        <p className="text-xs text-brand-300 uppercase font-bold mb-2">Key Insights</p>
+                                        <ul className="space-y-1">
+                                            {data.details.podcast.keyInsights.map((insight, i) => (
+                                                <li key={i} className="text-xs text-gray-300 flex items-start gap-1">
+                                                    <span className="text-brand-400 mt-0.5">•</span>
+                                                    {insight}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                                {/* Action Items */}
+                                {data.details.podcast.actionItems?.length > 0 && (
+                                    <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                                        <p className="text-xs text-brand-300 uppercase font-bold mb-2">Action Items</p>
+                                        <ul className="space-y-1">
+                                            {data.details.podcast.actionItems.map((item, i) => (
+                                                <li key={i} className="text-xs text-gray-300 flex items-start gap-1">
+                                                    <span className="text-emerald-400 mt-0.5">→</span>
+                                                    {item}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                                {/* Transcript excerpt */}
+                                {data.details.podcast.transcript?.length > 0 && (
+                                    <div className="p-3 bg-white/5 rounded-lg border border-white/10 max-h-40 overflow-y-auto">
+                                        <p className="text-xs text-brand-300 uppercase font-bold mb-2">Transcript</p>
+                                        {data.details.podcast.transcript.slice(0, 3).map((line, i) => (
+                                            <p key={i} className="text-xs text-gray-400 mb-1">
+                                                {line.speaker && <span className="text-brand-400 font-bold">{line.speaker}: </span>}
+                                                {line.text || line}
+                                            </p>
+                                        ))}
+                                    </div>
+                                )}
+                                {data.audioOverviewUrl && (
+                                    <a
+                                        href={data.audioOverviewUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center justify-center gap-2 w-full py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all text-sm"
+                                    >
+                                        <Play className="w-4 h-4 fill-current" />
+                                        <span className="font-bold">Podcast anhören</span>
+                                    </a>
+                                )}
+                            </div>
+                        ) : (
+                            <a
+                                href={data.audioOverviewUrl || '#'}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-2 w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all"
+                            >
+                                <Play className="w-4 h-4 fill-current" />
+                                <span className="font-bold">Podcast anhören</span>
+                            </a>
+                        )}
                     </div>
 
                     {/* VEO Video */}
@@ -244,31 +349,78 @@ export default function ScorecardView() {
                             <Video className="w-5 h-5 text-brand-400" />
                             VEO Brand Video
                         </h3>
-                        <p className="text-gray-400 text-sm mb-6">Automatisiertes Kurzvideo für Ihre Social Media Kanäle.</p>
-                        <button className="flex items-center justify-center gap-2 w-full py-3 bg-brand-500/20 hover:bg-brand-500/30 border border-brand-500/30 rounded-xl transition-all text-brand-300">
-                            <Video className="w-4 h-4" />
-                            <span className="font-bold">Vorschau generieren</span>
-                        </button>
+                        <p className="text-gray-400 text-sm mb-4">Automatisiertes Kurzvideo für Ihre Social Media Kanäle.</p>
+
+                        {data.details?.storyboard ? (
+                            <div className="space-y-3">
+                                {/* Video Script */}
+                                {data.details.storyboard.script && (
+                                    <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                                        <p className="text-xs text-brand-300 uppercase font-bold mb-1">Video Script</p>
+                                        <p className="text-xs text-gray-300 leading-relaxed line-clamp-3">{data.details.storyboard.script}</p>
+                                    </div>
+                                )}
+                                {/* Scenes */}
+                                {data.details.storyboard.scenes?.length > 0 && (
+                                    <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                                        <p className="text-xs text-brand-300 uppercase font-bold mb-2">Szenen ({data.details.storyboard.scenes.length})</p>
+                                        <div className="space-y-1">
+                                            {data.details.storyboard.scenes.slice(0, 3).map((scene, i) => (
+                                                <div key={i} className="text-xs text-gray-400 flex items-start gap-1">
+                                                    <span className="text-brand-400 font-bold flex-shrink-0">#{i + 1}</span>
+                                                    <span>{scene.description || scene}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                {/* Hashtags */}
+                                {data.details.storyboard.hashtags?.length > 0 && (
+                                    <div className="flex flex-wrap gap-1">
+                                        {data.details.storyboard.hashtags.slice(0, 5).map((tag, i) => (
+                                            <span key={i} className="text-xs bg-brand-500/20 text-brand-300 px-2 py-0.5 rounded-full">
+                                                {tag.startsWith('#') ? tag : `#${tag}`}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <button className="flex items-center justify-center gap-2 w-full py-3 bg-brand-500/20 hover:bg-brand-500/30 border border-brand-500/30 rounded-xl transition-all text-brand-300">
+                                <Video className="w-4 h-4" />
+                                <span className="font-bold">Vorschau generieren</span>
+                            </button>
+                        )}
                     </div>
                 </section>
 
                 {/* Real-time Competitive Comparison */}
                 <section className="glass-card p-6 sm:p-10 border-brand-500/20">
-                    <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                    <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
                         <Zap className="w-6 h-6 text-brand-400" />
                         Wettbewerbs-Analyse (Wedding & Müllerstraße)
                     </h2>
 
-                    <div className="space-y-6">
-                        {[
-                            { name: 'Konkurrent #1 (Wedding)', traffic: 8500, color: 'bg-brand-500' },
-                            { name: 'Konkurrent #2 (Wedding)', traffic: 6200, color: 'bg-brand-400' },
-                            { name: 'Konkurrent #3 (Wedding)', traffic: 4800, color: 'bg-brand-300' },
-                            { name: 'Ihr Unternehmen', traffic: 800, color: 'bg-rose-500' },
-                        ].map((comp, i) => (
+                    {/* Data source badge */}
+                    {competitionData?.source && (
+                        <div className="mb-4 flex items-center gap-2">
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${competitionData.source === 'similarweb'
+                                    ? 'bg-emerald-500/20 text-emerald-400'
+                                    : 'bg-amber-500/20 text-amber-400'
+                                }`}>
+                                {competitionData.source === 'similarweb' ? '📊 SimilarWeb' : '🤖 KI-Schätzung'}
+                            </span>
+                            {competitionData.disclaimer && (
+                                <span className="text-xs text-gray-500">{competitionData.disclaimer}</span>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="space-y-6 mt-4">
+                        {competitorList.map((comp, i) => (
                             <div key={i} className="space-y-2">
                                 <div className="flex justify-between text-base font-medium">
-                                    <span className={comp.name === 'Ihr Unternehmen' ? 'text-rose-400 font-bold' : 'text-gray-300'}>
+                                    <span className={comp.isClient || comp.name === 'Ihr Unternehmen' ? 'text-rose-400 font-bold' : 'text-gray-300'}>
                                         {comp.name}
                                     </span>
                                     <span className="text-gray-400">{comp.traffic.toLocaleString()} Besucher / Mt.</span>
@@ -276,7 +428,7 @@ export default function ScorecardView() {
                                 <div className="h-4 w-full bg-white/5 rounded-full overflow-hidden">
                                     <div
                                         className={`h-full ${comp.color} rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(167,139,250,0.2)]`}
-                                        style={{ width: `${(comp.traffic / 8500) * 100}%` }}
+                                        style={{ width: `${(comp.traffic / maxTraffic) * 100}%` }}
                                     />
                                 </div>
                             </div>

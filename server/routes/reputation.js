@@ -6,10 +6,16 @@ const router = express.Router();
 // Trigger an automated review blast for a client
 router.post('/blast', auth, async (req, res) => {
     try {
-        const { leadId, companyName, clientEmail } = req.body;
-        if (!clientEmail) return res.status(400).json({ error: 'Client-Email erforderlich' });
+        const { businessName, customerEmails, googleReviewLink, industry, keywords } = req.body;
+        if (!businessName) return res.status(400).json({ error: 'businessName erforderlich' });
 
-        const result = await sendReviewRequest(leadId, { companyName, email: clientEmail });
+        const result = await sendReviewRequest(
+            businessName,
+            customerEmails,
+            googleReviewLink,
+            industry,
+            keywords
+        );
         res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });

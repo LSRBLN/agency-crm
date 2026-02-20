@@ -62,6 +62,60 @@ router.post('/', auth, async (req, res) => {
     }
 });
 
+// Send an outreach email
+router.post('/:id/send', auth, async (req, res) => {
+    try {
+        const draft = await Outreach.findById(req.params.id);
+        if (!draft) return res.status(404).json({ error: 'Draft not found' });
+
+        if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+            return res.status(400).json({
+                error: 'SMTP not configured',
+                message: 'Set SMTP_USER and SMTP_PASS environment variables to enable email sending'
+            });
+        }
+
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST || 'smtp.gmail.com',
+            port: parseInt(process.env.SMTP_PORT || '587'),
+            secure: false,
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
+
+        // Get the lead for email address
+        const lead = await Lead.findById(draft.leadId);
+        if (!lead || !lead.email) {
+            return res.status(400).json({ error: 'Lead has no email address' });
+        }
+
+        await transporter.sendMail({
+            from: `"Anti-Gravity Agency" <${process.env.SMTP_USER}>`,
+            to: lead.email,
+            subject: draft.subject || `Ihre digitale Sichtbarkeit in Berlin Wedding`,
+            html: draft.body || draft.content,
+            text: draft.plainText || draft.body?.replace(/<[^>]*>/g, '') || ''
+        });
+
+        // Update draft status
+        draft.status = 'sent';
+        draft.sentAt = new Date();
+        await draft.save();
+
+        res.json({
+            success: true,
+            message: `Email sent to ${lead.email}`,
+            sentAt: draft.sentAt
+        });
+    } catch (error) {
+        console.error('[OUTREACH] Send error:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Update draft status (e.g., mark as sent)
 router.patch('/:id', auth, async (req, res) => {
     try {
