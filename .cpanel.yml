@@ -1,0 +1,10 @@
+# cPanel Deployment Configuration
+# Deploys the Node.js backend and React frontend
+
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/lsrblnicloud
+    - cd $DEPLOYPATH/agency-crm
+    - npm install --prefix server
+    - npm install --prefix client
+    - cd client && npm run build
