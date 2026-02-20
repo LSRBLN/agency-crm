@@ -1,5 +1,6 @@
-import { ArrowUpDown, Eye, ShieldCheck } from 'lucide-react'
+import { ArrowUpDown, ShieldCheck, Star } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 
 function PriorityBadge({ priority }) {
     const classes = {
@@ -13,6 +14,26 @@ function PriorityBadge({ priority }) {
 
 export default function LeadTable({ leads, onSort, sortField, sortDir }) {
     const navigate = useNavigate()
+
+    const handleReviewBlast = async (lead) => {
+        const clientEmail = prompt(`Bitte E-Mail Adresse für Review-Blast an ${lead.companyName} eingeben:`, lead.contactEmail || '')
+        if (!clientEmail) return
+
+        try {
+            const token = localStorage.getItem('token')
+            const res = await axios.post('/api/reputation/blast', {
+                leadId: lead._id,
+                companyName: lead.companyName,
+                clientEmail: clientEmail
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            alert(res.data.message || 'Review-Blast gestartet!')
+        } catch (err) {
+            console.error('Review Blast Error:', err)
+            alert('Fehler beim Starten des Review-Blasts: ' + (err.response?.data?.error || err.message))
+        }
+    }
 
     const columns = [
         { key: 'companyName', label: 'Unternehmen' },
@@ -90,13 +111,20 @@ export default function LeadTable({ leads, onSort, sortField, sortDir }) {
                                         >
                                             <ShieldCheck className="w-4 h-4" />
                                         </button>
+                                        <button
+                                            onClick={() => handleReviewBlast(lead)}
+                                            className="p-2 rounded-lg hover:bg-amber-600/20 text-gray-400 hover:text-amber-400 transition-all"
+                                            title="Review Blast starten (AI Guilt)"
+                                        >
+                                            <Star className="w-4 h-4" />
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
                         ))}
                         {leads.length === 0 && (
                             <tr>
-                                <td colSpan={7} className="table-cell text-center text-gray-500 py-12">
+                                <td colSpan={10} className="table-cell text-center text-gray-500 py-12">
                                     Keine Leads vorhanden. Importiere eine CSV-Datei.
                                 </td>
                             </tr>
