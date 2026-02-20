@@ -1,0 +1,39 @@
+{
+  "environmentName": "AzureCloud",
+  "homeTenantId": "0778438d-ccbf-4853-a68b-4a794cd23008",
+  "id": "039ac08f-643f-4ba0-9e3c-15dff8996095",
+  "isDefault": true,
+  "managedByTenants": [],
+  "name": "Azure for Students",
+  "state": "Enabled",
+  "tenantDefaultDomain": "lsrblnicloud.onmicrosoft.com",
+  "tenantDisplayName": "Standardverzeichnis",
+  "tenantId": "0778438d-ccbf-4853-a68b-4a794cd23008",
+  "user": {
+    "name": "lsrbln@icloud.com",
+    "type": "user"
+  }
+}
+insgesamt 100
+drwxr-xr-x 1 xipx xipx   538 20. Feb 05:54 .
+drwxr-xr-x 1 xipx xipx   250 20. Feb 03:18 ..
+-rw-r--r-- 1 xipx xipx   471 20. Feb 05:54 az_account.txt
+-rw-r--r-- 1 xipx xipx 38341 20. Feb 05:49 azure_install_dnf.log
+-rw-r--r-- 1 xipx xipx  2430 20. Feb 05:48 azure_install.log
+drwxr-xr-x 1 xipx xipx   206 20. Feb 04:20 client
+-rw-r--r-- 1 xipx xipx   438 20. Feb 04:47 commit_output.txt
+-rw-r--r-- 1 xipx xipx  2247 20. Feb 04:47 commit_success.txt
+-rw-r--r-- 1 xipx xipx  3866 20. Feb 04:40 deploy_azure.md
+-rw-r--r-- 1 xipx xipx   133 20. Feb 04:19 dev.log
+-rw-r--r-- 1 xipx xipx   278 20. Feb 03:19 .env.example
+-rw-r--r-- 1 xipx xipx    72 20. Feb 04:47 gh_auth_status.txt
+drwxr-xr-x 1 xipx xipx   128 20. Feb 04:52 .git
+-rw-r--r-- 1 xipx xipx    31 20. Feb 03:19 .gitignore
+-rw-r--r-- 1 xipx xipx     0 20. Feb 04:47 .git_initialized
+-rw-r--r-- 1 xipx xipx   270 20. Feb 03:56 install_client.log
+-rw-r--r-- 1 xipx xipx   146 20. Feb 03:51 install_server.log
+-rw-r--r-- 1 xipx xipx   813 20. Feb 04:47 ls_output.txt
+-rw-r--r-- 1 xipx xipx   402 20. Feb 03:19 package.json
+-rw-r--r-- 1 xipx xipx    61 20. Feb 04:52 push_log.txt
+drwxr-xr-x 1 xipx xipx   176 20. Feb 04:33 server
+-rw-r--r-- 1 xipx xipx     6 20. Feb 03:51 test_output.txt

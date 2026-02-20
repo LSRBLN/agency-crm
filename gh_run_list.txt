@@ -1,0 +1,4 @@
+completed	failure	Add or update the Azure App Service build and deployment workflow config	Build and deploy Node.js app to Azure Web App - agency-crm-frontend	main	push	22211607860	50s	2026-02-20T04:42:21Z
+completed	success	Add or update the Azure App Service build and deployment workflow config	Build and deploy Node.js app to Azure Web App - agency-crm-backend	main	push	22211607835	1m47s	2026-02-20T04:42:21Z
+completed	failure	Add or update the Azure App Service build and deployment workflow config	Build and deploy Node.js app to Azure Web App - agency-crm-frontend	main	push	22211369150	51s	2026-02-20T04:31:27Z
+completed	success	Add or update the Azure App Service build and deployment workflow config	Build and deploy Node.js app to Azure Web App - agency-crm-backend	main	push	22211369140	2m27s	2026-02-20T04:31:27Z

@@ -1,0 +1,244 @@
+build	Set up job	﻿2026-02-20T04:42:24.8581055Z Current runner version: '2.331.0'
+build	Set up job	2026-02-20T04:42:24.8603137Z ##[group]Runner Image Provisioner
+build	Set up job	2026-02-20T04:42:24.8603972Z Hosted Compute Agent
+build	Set up job	2026-02-20T04:42:24.8604545Z Version: 20260123.484
+build	Set up job	2026-02-20T04:42:24.8605178Z Commit: 6bd6555ca37d84114959e1c76d2c01448ff61c5d
+build	Set up job	2026-02-20T04:42:24.8605808Z Build Date: 2026-01-23T19:41:17Z
+build	Set up job	2026-02-20T04:42:24.8606382Z Worker ID: {2700aaa9-ef58-42b5-b5b2-28b10ba9c048}
+build	Set up job	2026-02-20T04:42:24.8607104Z Azure Region: westus3
+build	Set up job	2026-02-20T04:42:24.8607569Z ##[endgroup]
+build	Set up job	2026-02-20T04:42:24.8608882Z ##[group]Operating System
+build	Set up job	2026-02-20T04:42:24.8609417Z Ubuntu
+build	Set up job	2026-02-20T04:42:24.8609800Z 24.04.3
+build	Set up job	2026-02-20T04:42:24.8610223Z LTS
+build	Set up job	2026-02-20T04:42:24.8610646Z ##[endgroup]
+build	Set up job	2026-02-20T04:42:24.8611094Z ##[group]Runner Image
+build	Set up job	2026-02-20T04:42:24.8611535Z Image: ubuntu-24.04
+build	Set up job	2026-02-20T04:42:24.8612020Z Version: 20260201.15.1
+build	Set up job	2026-02-20T04:42:24.8612871Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260201.15/images/ubuntu/Ubuntu2404-Readme.md
+build	Set up job	2026-02-20T04:42:24.8614344Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260201.15
+build	Set up job	2026-02-20T04:42:24.8615304Z ##[endgroup]
+build	Set up job	2026-02-20T04:42:24.8616196Z ##[group]GITHUB_TOKEN Permissions
+build	Set up job	2026-02-20T04:42:24.8617874Z Contents: read
+build	Set up job	2026-02-20T04:42:24.8618324Z Metadata: read
+build	Set up job	2026-02-20T04:42:24.8618848Z ##[endgroup]
+build	Set up job	2026-02-20T04:42:24.8620760Z Secret source: Actions
+build	Set up job	2026-02-20T04:42:24.8621327Z Prepare workflow directory
+build	Set up job	2026-02-20T04:42:24.8906606Z Prepare all required actions
+build	Set up job	2026-02-20T04:42:24.8942074Z Getting action download info
+build	Set up job	2026-02-20T04:42:25.3199523Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+build	Set up job	2026-02-20T04:42:25.4153930Z Download action repository 'actions/setup-node@v3' (SHA:3235b876344d2a9aa001b8d1453c930bba69e610)
+build	Set up job	2026-02-20T04:42:25.6463217Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+build	Set up job	2026-02-20T04:42:25.8456386Z Complete job name: build
+build	Run actions/checkout@v4	﻿2026-02-20T04:42:25.9155834Z ##[group]Run actions/checkout@v4
+build	Run actions/checkout@v4	2026-02-20T04:42:25.9157177Z with:
+build	Run actions/checkout@v4	2026-02-20T04:42:25.9158049Z   repository: LSRBLN/agency-crm
+build	Run actions/checkout@v4	2026-02-20T04:42:25.9159267Z   token: ***
+build	Run actions/checkout@v4	2026-02-20T04:42:25.9160027Z   ssh-strict: true
+build	Run actions/checkout@v4	2026-02-20T04:42:25.9160910Z   ssh-user: git
+build	Run actions/checkout@v4	2026-02-20T04:42:25.9161709Z   persist-credentials: true
+build	Run actions/checkout@v4	2026-02-20T04:42:25.9162637Z   clean: true
+build	Run actions/checkout@v4	2026-02-20T04:42:25.9163506Z   sparse-checkout-cone-mode: true
+build	Run actions/checkout@v4	2026-02-20T04:42:25.9164453Z   fetch-depth: 1
+build	Run actions/checkout@v4	2026-02-20T04:42:25.9165565Z   fetch-tags: false
+build	Run actions/checkout@v4	2026-02-20T04:42:25.9166419Z   show-progress: true
+build	Run actions/checkout@v4	2026-02-20T04:42:25.9167282Z   lfs: false
+build	Run actions/checkout@v4	2026-02-20T04:42:25.9168014Z   submodules: false
+build	Run actions/checkout@v4	2026-02-20T04:42:25.9168869Z   set-safe-directory: true
+build	Run actions/checkout@v4	2026-02-20T04:42:25.9170067Z ##[endgroup]
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0215287Z Syncing repository: LSRBLN/agency-crm
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0218181Z ##[group]Getting Git version info
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0219468Z Working directory is '/home/runner/work/agency-crm/agency-crm'
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0221542Z [command]/usr/bin/git version
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0247514Z git version 2.52.0
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0271892Z ##[endgroup]
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0287167Z Temporarily overriding HOME='/home/runner/work/_temp/08904cfd-e2bb-4546-ae37-2c0abbfeeeef' before making global git config changes
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0291630Z Adding repository directory to the temporary git global config as a safe directory
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0301640Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agency-crm/agency-crm
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0334654Z Deleting the contents of '/home/runner/work/agency-crm/agency-crm'
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0445443Z ##[group]Initializing the repository
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0447972Z [command]/usr/bin/git init /home/runner/work/agency-crm/agency-crm
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0451762Z hint: Using 'master' as the name for the initial branch. This default branch name
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0455385Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0460139Z hint: to use in all of your new repositories, which will suppress this warning,
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0462491Z hint: call:
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0463495Z hint:
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0465443Z hint: 	git config --global init.defaultBranch <name>
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0467289Z hint:
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0469470Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0472417Z hint: 'development'. The just-created branch can be renamed via this command:
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0474494Z hint:
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0475811Z hint: 	git branch -m <name>
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0477197Z hint:
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0478925Z hint: Disable this message with "git config set advice.defaultBranchName false"
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0481927Z Initialized empty Git repository in /home/runner/work/agency-crm/agency-crm/.git/
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0486837Z [command]/usr/bin/git remote add origin https://github.com/LSRBLN/agency-crm
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0489657Z ##[endgroup]
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0490888Z ##[group]Disabling automatic garbage collection
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0492020Z [command]/usr/bin/git config --local gc.auto 0
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0508333Z ##[endgroup]
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0509476Z ##[group]Setting up auth
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0513991Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0540828Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0798065Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0820693Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+build	Run actions/checkout@v4	2026-02-20T04:42:26.0980223Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+build	Run actions/checkout@v4	2026-02-20T04:42:26.1003174Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+build	Run actions/checkout@v4	2026-02-20T04:42:26.1173422Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+build	Run actions/checkout@v4	2026-02-20T04:42:26.1211962Z ##[endgroup]
+build	Run actions/checkout@v4	2026-02-20T04:42:26.1213187Z ##[group]Fetching the repository
+build	Run actions/checkout@v4	2026-02-20T04:42:26.1219389Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +b81554a380123ba93445dbae75661fe6b3566abd:refs/remotes/origin/main
+build	Run actions/checkout@v4	2026-02-20T04:42:26.5813572Z From https://github.com/LSRBLN/agency-crm
+build	Run actions/checkout@v4	2026-02-20T04:42:26.5816185Z  * [new ref]         b81554a380123ba93445dbae75661fe6b3566abd -> origin/main
+build	Run actions/checkout@v4	2026-02-20T04:42:26.5838732Z ##[endgroup]
+build	Run actions/checkout@v4	2026-02-20T04:42:26.5839978Z ##[group]Determining the checkout info
+build	Run actions/checkout@v4	2026-02-20T04:42:26.5841292Z ##[endgroup]
+build	Run actions/checkout@v4	2026-02-20T04:42:26.5843579Z [command]/usr/bin/git sparse-checkout disable
+build	Run actions/checkout@v4	2026-02-20T04:42:26.5879040Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+build	Run actions/checkout@v4	2026-02-20T04:42:26.5900628Z ##[group]Checking out the ref
+build	Run actions/checkout@v4	2026-02-20T04:42:26.5904215Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+build	Run actions/checkout@v4	2026-02-20T04:42:26.5967976Z Switched to a new branch 'main'
+build	Run actions/checkout@v4	2026-02-20T04:42:26.5969526Z branch 'main' set up to track 'origin/main'.
+build	Run actions/checkout@v4	2026-02-20T04:42:26.5975457Z ##[endgroup]
+build	Run actions/checkout@v4	2026-02-20T04:42:26.6000835Z [command]/usr/bin/git log -1 --format=%H
+build	Run actions/checkout@v4	2026-02-20T04:42:26.6017800Z b81554a380123ba93445dbae75661fe6b3566abd
+build	Set up Node.js version	﻿2026-02-20T04:42:26.6265955Z ##[group]Run actions/setup-node@v3
+build	Set up Node.js version	2026-02-20T04:42:26.6266809Z with:
+build	Set up Node.js version	2026-02-20T04:42:26.6267430Z   node-version: 20.x
+build	Set up Node.js version	2026-02-20T04:42:26.6268139Z   always-auth: false
+build	Set up Node.js version	2026-02-20T04:42:26.6268847Z   check-latest: false
+build	Set up Node.js version	2026-02-20T04:42:26.6269792Z   token: ***
+build	Set up Node.js version	2026-02-20T04:42:26.6270431Z ##[endgroup]
+build	Set up Node.js version	2026-02-20T04:42:26.8050500Z Found in cache @ /opt/hostedtoolcache/node/20.20.0/x64
+build	Set up Node.js version	2026-02-20T04:42:26.8056612Z ##[group]Environment details
+build	Set up Node.js version	2026-02-20T04:42:27.1153773Z node: v20.20.0
+build	Set up Node.js version	2026-02-20T04:42:27.1154508Z npm: 10.8.2
+build	Set up Node.js version	2026-02-20T04:42:27.1155133Z yarn: 1.22.22
+build	Set up Node.js version	2026-02-20T04:42:27.1156161Z ##[endgroup]
+build	npm install, build, and test	﻿2026-02-20T04:42:27.1238006Z ##[group]Run npm install
+build	npm install, build, and test	2026-02-20T04:42:27.1238527Z [36;1mnpm install[0m
+build	npm install, build, and test	2026-02-20T04:42:27.1238903Z [36;1mnpm run build --if-present[0m
+build	npm install, build, and test	2026-02-20T04:42:27.1239325Z [36;1mnpm run test --if-present[0m
+build	npm install, build, and test	2026-02-20T04:42:27.1270943Z shell: /usr/bin/bash -e {0}
+build	npm install, build, and test	2026-02-20T04:42:27.1271390Z ##[endgroup]
+build	npm install, build, and test	2026-02-20T04:42:34.9047403Z 
+build	npm install, build, and test	2026-02-20T04:42:34.9057423Z added 29 packages, and audited 30 packages in 8s
+build	npm install, build, and test	2026-02-20T04:42:34.9058149Z 
+build	npm install, build, and test	2026-02-20T04:42:34.9058510Z 7 packages are looking for funding
+build	npm install, build, and test	2026-02-20T04:42:34.9059028Z   run `npm fund` for details
+build	npm install, build, and test	2026-02-20T04:42:34.9059309Z 
+build	npm install, build, and test	2026-02-20T04:42:34.9059554Z found 0 vulnerabilities
+build	Upload artifact for deployment job	﻿2026-02-20T04:42:35.1186177Z ##[group]Run actions/upload-artifact@v4
+build	Upload artifact for deployment job	2026-02-20T04:42:35.1186464Z with:
+build	Upload artifact for deployment job	2026-02-20T04:42:35.1186639Z   name: node-app
+build	Upload artifact for deployment job	2026-02-20T04:42:35.1186827Z   path: .
+build	Upload artifact for deployment job	2026-02-20T04:42:35.1187004Z   if-no-files-found: warn
+build	Upload artifact for deployment job	2026-02-20T04:42:35.1187207Z   compression-level: 6
+build	Upload artifact for deployment job	2026-02-20T04:42:35.1187397Z   overwrite: false
+build	Upload artifact for deployment job	2026-02-20T04:42:35.1187577Z   include-hidden-files: false
+build	Upload artifact for deployment job	2026-02-20T04:42:35.1187817Z ##[endgroup]
+build	Upload artifact for deployment job	2026-02-20T04:42:36.4142880Z With the provided path, there will be 9623 files uploaded
+build	Upload artifact for deployment job	2026-02-20T04:42:36.4143874Z Artifact name is valid!
+build	Upload artifact for deployment job	2026-02-20T04:42:36.4144345Z Root directory input is valid!
+build	Upload artifact for deployment job	2026-02-20T04:42:36.7362522Z Beginning upload of artifact content to blob storage
+build	Upload artifact for deployment job	2026-02-20T04:42:40.7649503Z Uploaded bytes 6237571
+build	Upload artifact for deployment job	2026-02-20T04:42:40.8275056Z Finished uploading artifact content to blob storage!
+build	Upload artifact for deployment job	2026-02-20T04:42:40.8277882Z SHA256 digest of uploaded artifact zip is 0497460c78b93827765b713faa09da412805d40b114fef331542734d1c7ab9a8
+build	Upload artifact for deployment job	2026-02-20T04:42:40.8280981Z Finalizing artifact upload
+build	Upload artifact for deployment job	2026-02-20T04:42:40.9759843Z Artifact node-app.zip successfully finalized. Artifact ID 5584530165
+build	Upload artifact for deployment job	2026-02-20T04:42:40.9761625Z Artifact node-app has been successfully uploaded! Final size is 6237571 bytes. Artifact ID is 5584530165
+build	Upload artifact for deployment job	2026-02-20T04:42:40.9770035Z Artifact download URL: https://github.com/LSRBLN/agency-crm/actions/runs/22211607860/artifacts/5584530165
+build	Post Set up Node.js version	﻿2026-02-20T04:42:41.0094072Z Post job cleanup.
+build	Post Run actions/checkout@v4	﻿2026-02-20T04:42:41.1622066Z Post job cleanup.
+build	Post Run actions/checkout@v4	2026-02-20T04:42:41.2477700Z [command]/usr/bin/git version
+build	Post Run actions/checkout@v4	2026-02-20T04:42:41.2513486Z git version 2.52.0
+build	Post Run actions/checkout@v4	2026-02-20T04:42:41.2552583Z Temporarily overriding HOME='/home/runner/work/_temp/a33a7075-652b-43a8-bc38-03d3a34d966d' before making global git config changes
+build	Post Run actions/checkout@v4	2026-02-20T04:42:41.2554089Z Adding repository directory to the temporary git global config as a safe directory
+build	Post Run actions/checkout@v4	2026-02-20T04:42:41.2559030Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/agency-crm/agency-crm
+build	Post Run actions/checkout@v4	2026-02-20T04:42:41.2594410Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+build	Post Run actions/checkout@v4	2026-02-20T04:42:41.2622745Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+build	Post Run actions/checkout@v4	2026-02-20T04:42:41.2805051Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build	Post Run actions/checkout@v4	2026-02-20T04:42:41.2822819Z http.https://github.com/.extraheader
+build	Post Run actions/checkout@v4	2026-02-20T04:42:41.2834609Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+build	Post Run actions/checkout@v4	2026-02-20T04:42:41.2860508Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+build	Post Run actions/checkout@v4	2026-02-20T04:42:41.3034637Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+build	Post Run actions/checkout@v4	2026-02-20T04:42:41.3060527Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+build	Complete job	﻿2026-02-20T04:42:41.3337713Z Cleaning up orphan processes
+deploy	Set up job	﻿2026-02-20T04:42:46.5306317Z Current runner version: '2.331.0'
+deploy	Set up job	2026-02-20T04:42:46.5340987Z ##[group]Runner Image Provisioner
+deploy	Set up job	2026-02-20T04:42:46.5342443Z Hosted Compute Agent
+deploy	Set up job	2026-02-20T04:42:46.5343837Z Version: 20260123.484
+deploy	Set up job	2026-02-20T04:42:46.5345078Z Commit: 6bd6555ca37d84114959e1c76d2c01448ff61c5d
+deploy	Set up job	2026-02-20T04:42:46.5346341Z Build Date: 2026-01-23T19:41:17Z
+deploy	Set up job	2026-02-20T04:42:46.5347514Z Worker ID: {9d632e94-fda1-471d-aef5-d2922296146e}
+deploy	Set up job	2026-02-20T04:42:46.5348549Z Azure Region: northcentralus
+deploy	Set up job	2026-02-20T04:42:46.5349183Z ##[endgroup]
+deploy	Set up job	2026-02-20T04:42:46.5350561Z ##[group]Operating System
+deploy	Set up job	2026-02-20T04:42:46.5351245Z Ubuntu
+deploy	Set up job	2026-02-20T04:42:46.5351747Z 24.04.3
+deploy	Set up job	2026-02-20T04:42:46.5352208Z LTS
+deploy	Set up job	2026-02-20T04:42:46.5352947Z ##[endgroup]
+deploy	Set up job	2026-02-20T04:42:46.5353516Z ##[group]Runner Image
+deploy	Set up job	2026-02-20T04:42:46.5354089Z Image: ubuntu-24.04
+deploy	Set up job	2026-02-20T04:42:46.5354612Z Version: 20260201.15.1
+deploy	Set up job	2026-02-20T04:42:46.5355653Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260201.15/images/ubuntu/Ubuntu2404-Readme.md
+deploy	Set up job	2026-02-20T04:42:46.5357411Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260201.15
+deploy	Set up job	2026-02-20T04:42:46.5358324Z ##[endgroup]
+deploy	Set up job	2026-02-20T04:42:46.5359379Z ##[group]GITHUB_TOKEN Permissions
+deploy	Set up job	2026-02-20T04:42:46.5361464Z Contents: read
+deploy	Set up job	2026-02-20T04:42:46.5362013Z Metadata: read
+deploy	Set up job	2026-02-20T04:42:46.5362967Z ##[endgroup]
+deploy	Set up job	2026-02-20T04:42:46.5364993Z Secret source: Actions
+deploy	Set up job	2026-02-20T04:42:46.5366024Z Prepare workflow directory
+deploy	Set up job	2026-02-20T04:42:46.5765559Z Prepare all required actions
+deploy	Set up job	2026-02-20T04:42:46.5820980Z Getting action download info
+deploy	Set up job	2026-02-20T04:42:46.9100119Z Download action repository 'actions/download-artifact@v4' (SHA:d3f86a106a0bac45b974a628896c90dbdf5c8093)
+deploy	Set up job	2026-02-20T04:42:47.3885522Z Download action repository 'azure/login@v2' (SHA:a457da9ea143d694b1b9c7c869ebb04ebe844ef5)
+deploy	Set up job	2026-02-20T04:42:47.7040785Z Download action repository 'azure/webapps-deploy@v3' (SHA:657f0700ea5214d56a0400d8ac5e8023c963d25d)
+deploy	Set up job	2026-02-20T04:42:49.9079671Z Complete job name: deploy
+deploy	Download artifact from build job	﻿2026-02-20T04:42:49.9683860Z ##[group]Run actions/download-artifact@v4
+deploy	Download artifact from build job	2026-02-20T04:42:49.9684521Z with:
+deploy	Download artifact from build job	2026-02-20T04:42:49.9684819Z   name: node-app
+deploy	Download artifact from build job	2026-02-20T04:42:49.9685076Z   merge-multiple: false
+deploy	Download artifact from build job	2026-02-20T04:42:49.9685347Z   repository: LSRBLN/agency-crm
+deploy	Download artifact from build job	2026-02-20T04:42:49.9685626Z   run-id: 22211607860
+deploy	Download artifact from build job	2026-02-20T04:42:49.9686042Z ##[endgroup]
+deploy	Download artifact from build job	2026-02-20T04:42:50.1701415Z Downloading single artifact
+deploy	Download artifact from build job	2026-02-20T04:42:50.3030450Z Preparing to download the following artifacts:
+deploy	Download artifact from build job	2026-02-20T04:42:50.3031210Z - node-app (ID: 5584530165, Size: 6237571, Expected Digest: sha256:0497460c78b93827765b713faa09da412805d40b114fef331542734d1c7ab9a8)
+deploy	Download artifact from build job	2026-02-20T04:42:50.3983266Z Redirecting to blob download url: https://productionresultssa7.blob.core.windows.net/actions-results/c9671754-8211-4637-85c0-e484db59c06f/workflow-job-run-84a3cf48-8818-5980-84ee-48f09418c015/artifacts/236bf3d06418ac7275c91e12343cfbf289a60ef44239b89d4056c5a20b2ba55d.zip
+deploy	Download artifact from build job	2026-02-20T04:42:50.3984618Z Starting download of artifact to: /home/runner/work/agency-crm/agency-crm
+deploy	Download artifact from build job	2026-02-20T04:42:50.5488652Z (node:2092) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+deploy	Download artifact from build job	2026-02-20T04:42:50.5491526Z (Use `node --trace-deprecation ...` to show where the warning was created)
+deploy	Download artifact from build job	2026-02-20T04:42:53.1492176Z SHA256 digest of downloaded artifact is 0497460c78b93827765b713faa09da412805d40b114fef331542734d1c7ab9a8
+deploy	Download artifact from build job	2026-02-20T04:42:53.1498673Z Artifact download completed successfully.
+deploy	Download artifact from build job	2026-02-20T04:42:53.1499265Z Total of 1 artifact(s) downloaded
+deploy	Download artifact from build job	2026-02-20T04:42:53.1503185Z Download artifact has finished successfully
+deploy	Login to Azure	﻿2026-02-20T04:42:53.1851120Z ##[group]Run azure/login@v2
+deploy	Login to Azure	2026-02-20T04:42:53.1851411Z with:
+deploy	Login to Azure	2026-02-20T04:42:53.1851948Z   client-id: ***
+deploy	Login to Azure	2026-02-20T04:42:53.1852214Z   tenant-id: ***
+deploy	Login to Azure	2026-02-20T04:42:53.1852489Z   subscription-id: ***
+deploy	Login to Azure	2026-02-20T04:42:53.1852956Z   enable-AzPSSession: false
+deploy	Login to Azure	2026-02-20T04:42:53.1853202Z   environment: azurecloud
+deploy	Login to Azure	2026-02-20T04:42:53.1853711Z   allow-no-subscriptions: false
+deploy	Login to Azure	2026-02-20T04:42:53.1853984Z   audience: api://AzureADTokenExchange
+deploy	Login to Azure	2026-02-20T04:42:53.1884946Z   auth-type: SERVICE_PRINCIPAL
+deploy	Login to Azure	2026-02-20T04:42:53.1885276Z ##[endgroup]
+deploy	Login to Azure	2026-02-20T04:42:53.2255872Z Running Azure CLI Login.
+deploy	Login to Azure	2026-02-20T04:43:07.9599325Z [command]/usr/bin/az cloud set -n azurecloud
+deploy	Login to Azure	2026-02-20T04:43:08.1814789Z Done setting cloud: "azurecloud"
+deploy	Login to Azure	2026-02-20T04:43:08.3144850Z Federated token details:
+deploy	Login to Azure	2026-02-20T04:43:08.3145436Z  issuer - https://token.actions.githubusercontent.com
+deploy	Login to Azure	2026-02-20T04:43:08.3146125Z  subject claim - repo:LSRBLN/agency-crm:ref:refs/heads/main
+deploy	Login to Azure	2026-02-20T04:43:08.3146733Z  audience - api://AzureADTokenExchange
+deploy	Login to Azure	2026-02-20T04:43:08.3147634Z  job_workflow_ref - LSRBLN/agency-crm/.github/workflows/main_agency-crm-frontend.yml@refs/heads/main
+deploy	Login to Azure	2026-02-20T04:43:08.3148473Z Attempting Azure CLI login by using OIDC...
+deploy	Login to Azure	2026-02-20T04:43:09.2076541Z ##[error]No subscriptions found for ***.
+deploy	Login to Azure	
+deploy	Login to Azure	2026-02-20T04:43:09.2838264Z ##[error]Login failed with Error: The process '/usr/bin/az' failed with exit code 1. Double check if the 'auth-type' is correct. Refer to https://github.com/Azure/login#readme for more information.
+deploy	Post Login to Azure	﻿2026-02-20T04:43:09.2990830Z Post job cleanup.
+deploy	Post Login to Azure	2026-02-20T04:43:09.3381077Z Clearing azure cli accounts from the local cache.
+deploy	Post Login to Azure	2026-02-20T04:43:09.3390828Z [command]/usr/bin/az account clear
+deploy	Complete job	﻿2026-02-20T04:43:09.7717123Z Cleaning up orphan processes
+deploy	Complete job	2026-02-20T04:43:09.8355838Z Terminate orphan process: pid (2255) (python3)

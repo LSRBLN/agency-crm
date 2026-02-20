@@ -1,0 +1,5 @@
+insgesamt 8
+drwxr-xr-x 1 xipx xipx  110 20. Feb 05:57 .
+drwxr-xr-x 1 xipx xipx   18 20. Feb 05:57 ..
+-rw-r--r-- 1 xipx xipx 1864 20. Feb 05:57 main_agency-crm-backend.yml
+-rw-r--r-- 1 xipx xipx 1866 20. Feb 05:57 main_agency-crm-frontend.yml

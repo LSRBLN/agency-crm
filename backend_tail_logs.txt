@@ -1,0 +1,80 @@
+WARNING: 2026-02-20T04:56:01  Welcome, you are now connected to log-streaming service.
+WARNING: Starting Log Tail -n 10 of existing logs ----
+WARNING: /appsvctmp/volatile/logs/runtime/container.log 
+2026-02-20T04:55:54.2519332Z if [ -d /node_modules ]; then
+2026-02-20T04:55:54.2519367Z     ln -sfn /node_modules ./node_modules 
+2026-02-20T04:55:54.2519401Z fi
+2026-02-20T04:55:54.2519433Z 
+2026-02-20T04:55:54.2519466Z echo "Done."
+2026-02-20T04:55:54.2533170Z node /opt/startup/default-static-site.js
+2026-02-20T04:55:54.2563428Z Found tar.gz based node_modules.
+2026-02-20T04:55:54.2573059Z Removing existing modules directory from root...
+2026-02-20T04:55:54.2654213Z Extracting modules...
+2026-02-20T04:55:56.1349441Z Done.
+Ending Log Tail of existing logs ---
+Starting Live Log Stream ---
+WARNING: 2026-02-20T04:56:08.2822826Z    _____                               
+2026-02-20T04:56:08.2824222Z   /  _  \ __________ _________   ____  
+2026-02-20T04:56:08.2824312Z  /  /_\  \\___   /  |  \_  __ \_/ __ \ 
+2026-02-20T04:56:08.2824350Z /    |    \/    /|  |  /|  | \/\  ___/ 
+2026-02-20T04:56:08.2824385Z \____|__  /_____ \____/ |__|    \___  >
+2026-02-20T04:56:08.2824427Z         \/      \/                  \/ 
+2026-02-20T04:56:08.2824461Z A P P   S E R V I C E   O N   L I N U X
+2026-02-20T04:56:08.2824493Z 
+2026-02-20T04:56:08.2824541Z Documentation    : http://aka.ms/webapp-linux
+2026-02-20T04:56:08.2824579Z NodeJS quickstart: https://aka.ms/node-qs
+2026-02-20T04:56:08.2824614Z NodeJS Version   : v20.20.0
+2026-02-20T04:56:08.2824690Z Instance Name    : 10-30-0-50
+2026-02-20T04:56:08.2824729Z Instance Id      : aa5a7b1e3d657bb5e200ae7d4b6324379854db652dc7780ea09b7547b87142de
+2026-02-20T04:56:08.2824763Z 
+2026-02-20T04:56:08.2824797Z Note: Any data outside '/home' is not persisted
+WARNING: 2026-02-20T04:56:10.0499270Z Starting OpenBSD Secure Shell server: sshd.
+2026-02-20T04:56:10.0681838Z WEBSITES_INCLUDE_CLOUD_CERTS is not set to true.
+2026-02-20T04:56:10.1325627Z Updating certificates in /etc/ssl/certs...
+WARNING: 2026-02-20T04:56:18.8680580Z rehash: warning: skipping duplicate certificate in azl_SSL.com_TLS_ECC_Root_CA_2022.pem
+2026-02-20T04:56:18.8691262Z rehash: warning: skipping duplicate certificate in azl_SSL.com_TLS_RSA_Root_CA_2022.pem
+2026-02-20T04:56:18.9162570Z rehash: warning: skipping ca-certificates.crt,it does not contain exactly one certificate or CRL
+2026-02-20T04:56:18.9470864Z 4 added, 0 removed; done.
+2026-02-20T04:56:18.9475566Z Running hooks in /etc/ca-certificates/update.d...
+2026-02-20T04:56:18.9497048Z done.
+2026-02-20T04:56:18.9585443Z CA certificates copied and updated successfully.
+2026-02-20T04:56:19.0499646Z Starting periodic command scheduler: cron.
+2026-02-20T04:56:19.2959497Z Found build manifest file at '/home/site/wwwroot/oryx-manifest.toml'. Deserializing it...
+2026-02-20T04:56:19.3014345Z Could not find operation ID in manifest. Generating an operation id...
+2026-02-20T04:56:19.3016263Z Build Operation ID: 60eb5e63-59ea-4512-9001-423b20e2ea7a
+2026-02-20T04:56:19.4869483Z Environment Variables for Application Insight's IPA Codeless Configuration exists..
+2026-02-20T04:56:19.4960372Z Writing output script to '/opt/startup/startup.sh'
+2026-02-20T04:56:19.5346249Z Running #!/bin/sh
+2026-02-20T04:56:19.5347049Z 
+2026-02-20T04:56:19.5347174Z # Enter the source directory to make sure the script runs where the user expects
+2026-02-20T04:56:19.5347244Z cd "/home/site/wwwroot"
+2026-02-20T04:56:19.5347287Z 
+2026-02-20T04:56:19.5347327Z export NODE_PATH=/usr/local/lib/node_modules:$NODE_PATH
+2026-02-20T04:56:19.5347370Z if [ -z "$PORT" ]; then
+2026-02-20T04:56:19.5347412Z 		export PORT=8080
+2026-02-20T04:56:19.5347450Z fi
+2026-02-20T04:56:19.5347500Z 
+2026-02-20T04:56:19.5347536Z echo Found tar.gz based node_modules.
+2026-02-20T04:56:19.5347577Z extractionCommand="tar -xzf node_modules.tar.gz -C /node_modules"
+2026-02-20T04:56:19.5347617Z echo "Removing existing modules directory from root..."
+2026-02-20T04:56:19.5347651Z rm -fr /node_modules
+2026-02-20T04:56:19.5347688Z mkdir -p /node_modules
+2026-02-20T04:56:19.5347724Z echo Extracting modules...
+2026-02-20T04:56:19.5347773Z $extractionCommand
+2026-02-20T04:56:19.5347837Z export NODE_PATH="/node_modules":$NODE_PATH
+2026-02-20T04:56:19.5347874Z export PATH=/node_modules/.bin:$PATH
+2026-02-20T04:56:19.5347907Z if [ -d node_modules ]; then
+2026-02-20T04:56:19.5347945Z     mv -f node_modules _del_node_modules || true
+2026-02-20T04:56:19.5347985Z fi
+2026-02-20T04:56:19.5348023Z 
+2026-02-20T04:56:19.5348073Z if [ -d /node_modules ]; then
+2026-02-20T04:56:19.5348115Z     ln -sfn /node_modules ./node_modules 
+2026-02-20T04:56:19.5348156Z fi
+2026-02-20T04:56:19.5348193Z 
+2026-02-20T04:56:19.5348234Z echo "Done."
+2026-02-20T04:56:19.5350063Z node /opt/startup/default-static-site.js
+2026-02-20T04:56:19.5379555Z Found tar.gz based node_modules.
+2026-02-20T04:56:19.5380929Z Removing existing modules directory from root...
+2026-02-20T04:56:19.5470217Z Extracting modules...
+2026-02-20T04:56:21.2039271Z Done.
+ERROR: Log stream interrupted. Exiting live log stream.

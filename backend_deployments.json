@@ -1,0 +1,52 @@
+[
+  {
+    "active": true,
+    "author": "N/A",
+    "author_email": "N/A",
+    "build_summary": {
+      "errors": [],
+      "warnings": []
+    },
+    "complete": true,
+    "deployer": "OneDeploy",
+    "end_time": "2026-02-20T04:43:59.1907027Z",
+    "id": "60a78a40-f50b-4fa6-b25a-974d09baede5",
+    "is_readonly": true,
+    "is_temp": false,
+    "last_success_end_time": "2026-02-20T04:43:59.1907027Z",
+    "log_url": "https://agency-crm-backend-a0d7e2cee4fchnbv.scm.germanywestcentral-01.azurewebsites.net/api/deployments/60a78a40-f50b-4fa6-b25a-974d09baede5/log",
+    "message": "OneDeploy",
+    "progress": "",
+    "received_time": "2026-02-20T04:43:49.5370703Z",
+    "site_name": "agency-crm-backend",
+    "start_time": "2026-02-20T04:43:51.1919918Z",
+    "status": 4,
+    "status_text": "",
+    "url": "https://agency-crm-backend-a0d7e2cee4fchnbv.scm.germanywestcentral-01.azurewebsites.net/api/deployments/60a78a40-f50b-4fa6-b25a-974d09baede5"
+  },
+  {
+    "active": false,
+    "author": "N/A",
+    "author_email": "N/A",
+    "build_summary": {
+      "errors": [],
+      "warnings": []
+    },
+    "complete": true,
+    "deployer": "OneDeploy",
+    "end_time": "2026-02-20T04:33:46.704363Z",
+    "id": "4b357237-fc22-4510-b550-9cb4693990b1",
+    "is_readonly": true,
+    "is_temp": false,
+    "last_success_end_time": "2026-02-20T04:33:46.704363Z",
+    "log_url": "https://agency-crm-backend-a0d7e2cee4fchnbv.scm.germanywestcentral-01.azurewebsites.net/api/deployments/4b357237-fc22-4510-b550-9cb4693990b1/log",
+    "message": "OneDeploy",
+    "progress": "",
+    "received_time": "2026-02-20T04:33:24.6558025Z",
+    "site_name": "agency-crm-backend",
+    "start_time": "2026-02-20T04:33:27.3872635Z",
+    "status": 4,
+    "status_text": "",
+    "url": "https://agency-crm-backend-a0d7e2cee4fchnbv.scm.germanywestcentral-01.azurewebsites.net/api/deployments/4b357237-fc22-4510-b550-9cb4693990b1"
+  }
+]

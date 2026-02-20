@@ -1,0 +1,2 @@
+Everything up-to-date
+Branch 'main' folgt nun 'origin/main'.
