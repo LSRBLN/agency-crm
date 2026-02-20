@@ -1,5 +1,7 @@
 require('dotenv').config();
 const express = require('express');
+const { initMonitoring } = require('./utils/datadog');
+initMonitoring();
 const mongoose = require('mongoose');
 const cors = require('cors');
 
@@ -17,14 +19,6 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/leads', leadRoutes);
-app.use('/api/audits', auditRoutes);
-app.use('/api/outreach', outreachRoutes);
-app.use('/api/reputation', require('./routes/reputation'));
-app.use('/api/portal', portalRoutes);
-app.use('/api/stripe', stripeRoutes);
 
 
 // Connect to MongoDB and start server

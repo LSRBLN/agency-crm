@@ -13,6 +13,11 @@ const leadSchema = new mongoose.Schema({
     city: { type: String, default: '' },
     email: { type: String, default: '' },
     notes: { type: String, default: '' },
+    businessDNA: { type: Object, default: {} },
+    aeoProof: { type: Object, default: {} },
+    competitorGap: { type: String, default: '' },
+    veoData: { type: Object, default: {} },
+    audioData: { type: Object, default: {} },
 }, { timestamps: true });
 
 // Auto-calculate priority before save

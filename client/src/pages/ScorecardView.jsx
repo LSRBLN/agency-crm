@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import axios from 'axios'
-import { ShieldCheck, MapPin, Zap, MessageSquare, AlertTriangle, CheckCircle, Smartphone, BarChart3, Mail } from 'lucide-react'
+import { ShieldCheck, MapPin, Zap, MessageSquare, AlertTriangle, CheckCircle, Smartphone, BarChart3, Mail, Play, Video } from 'lucide-react'
 
 export default function ScorecardView() {
     const { id } = useParams()
@@ -182,16 +182,73 @@ export default function ScorecardView() {
                         </p>
                         <div className="space-y-3">
                             <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                                <div className="h-full bg-rose-500 rounded-full w-[15%] shadow-[0_0_10px_rgba(244,63,94,0.5)]" />
+                                <div className="h-full bg-rose-500 rounded-full shadow-[0_0_10px_rgba(244,63,94,0.5)]" style={{ width: `${data.aeoProof?.score || 15}%` }} />
                             </div>
                             <p className="text-xs text-rose-400 font-bold flex items-center gap-1">
                                 <AlertTriangle className="w-3.5 h-3.5" />
-                                Aktuelle Sichtbarkeit: 15% (Kritisch)
+                                Aktuelle Sichtbarkeit: {data.aeoProof?.score || 15}% ({data.aeoProof?.score < 50 ? 'Kritisch' : 'Optimierungsbedarf'})
                             </p>
                         </div>
                         <p className="text-gray-400 text-xs mt-4 leading-relaxed">
-                            KI-Modelle bevorzugen aktuell Wettbewerber, da Ihre Standort-Daten keine semantische Kohärenz aufweisen.
+                            {data.aeoProof?.reasoning || "KI-Modelle bevorzugen aktuell Wettbewerber, da Ihre Standort-Daten keine semantische Kohärenz aufweisen."}
                         </p>
+                    </div>
+                </section>
+
+                {/* Business DNA (Pomelli Scanner) */}
+                {data.businessDNA && (
+                    <section className="glass-card p-6 border-brand-500/20">
+                        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                            <Zap className="w-5 h-5 text-brand-400" />
+                            Business DNA Profile (Pomelli)
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                                <p className="text-xs text-brand-300 uppercase font-bold mb-1">Primary Color</p>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-6 h-6 rounded border border-white/20" style={{ backgroundColor: data.businessDNA.primaryColor }} />
+                                    <span className="text-sm font-mono">{data.businessDNA.primaryColor}</span>
+                                </div>
+                            </div>
+                            <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                                <p className="text-xs text-brand-300 uppercase font-bold mb-1">Brand Voice</p>
+                                <p className="text-sm">{data.businessDNA.brandVoice}</p>
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {/* Audio & Video High-Value Assets */}
+                <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {/* NotebookLM Audio */}
+                    <div className="glass-card p-6 border-brand-500/20">
+                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                            <Play className="w-5 h-5 text-brand-400" />
+                            Audio Visibility Report
+                        </h3>
+                        <p className="text-gray-400 text-sm mb-6">Ein interaktiver AI-Podcast über Ihre Sichtbarkeit.</p>
+                        <a
+                            href={data.audioOverviewUrl || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all"
+                        >
+                            <Play className="w-4 h-4 fill-current" />
+                            <span className="font-bold">Podcast anhören</span>
+                        </a>
+                    </div>
+
+                    {/* VEO Video */}
+                    <div className="glass-card p-6 border-brand-500/20">
+                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                            <Video className="w-5 h-5 text-brand-400" />
+                            VEO Brand Video
+                        </h3>
+                        <p className="text-gray-400 text-sm mb-6">Automatisiertes Kurzvideo für Ihre Social Media Kanäle.</p>
+                        <button className="flex items-center justify-center gap-2 w-full py-3 bg-brand-500/20 hover:bg-brand-500/30 border border-brand-500/30 rounded-xl transition-all text-brand-300">
+                            <Video className="w-4 h-4" />
+                            <span className="font-bold">Vorschau generieren</span>
+                        </button>
                     </div>
                 </section>
 
@@ -229,7 +286,7 @@ export default function ScorecardView() {
                     <div className="mt-8 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30">
                         <p className="text-rose-100 font-bold flex items-center gap-2">
                             <AlertTriangle className="w-5 h-5" />
-                            AI Trust Lever: Ihr Hauptwettbewerber hat ~10x mehr organische Sichtbarkeit.
+                            AI Trust Lever: {data.competitorGap || "Ihr Hauptwettbewerber hat ~10x mehr organische Sichtbarkeit."}
                         </p>
                         <p className="text-rose-200/70 text-sm mt-1">
                             Der Grund: "KI-Modelle bevorzugen strukturierte Daten von Wettbewerbern, da Ihre Profile semantisch isoliert sind."

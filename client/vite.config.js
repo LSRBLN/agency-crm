@@ -7,7 +7,9 @@ export default defineConfig({
         port: 5173,
         proxy: {
             '/api': {
-                target: 'http://localhost:5000',
+                target: process.env.NODE_ENV === 'production'
+                    ? 'https://agency-crm-backend-v2.azurewebsites.net'
+                    : 'http://localhost:5000',
                 changeOrigin: true,
             },
         },

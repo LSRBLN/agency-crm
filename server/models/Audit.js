@@ -17,6 +17,9 @@ const auditSchema = new mongoose.Schema({
     mapsGroundingReasoning: { type: String, default: '' },
     structuredDataFound: { type: Boolean, default: false },
     sentimentKeywords: { type: [String], default: [] },
+    businessDNA: { type: Object, default: {} },
+    aeoProof: { type: Object, default: {} },
+    audioOverviewUrl: { type: String, default: '' },
     details: { type: mongoose.Schema.Types.Mixed, default: {} },
 }, { timestamps: true });
 

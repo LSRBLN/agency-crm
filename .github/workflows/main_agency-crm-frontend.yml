@@ -58,6 +58,6 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'agency-crm-frontend'
+          app-name: 'agency-crm-frontend-v2'
           slot-name: 'Production'
           package: .

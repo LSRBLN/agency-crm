@@ -33,6 +33,10 @@ const { createTrack } = require('../services/conductorService');
 const { analyzeWebsite } = require('../services/brownfieldService');
 const { scanBusinessDNA } = require('../services/pomelliService');
 const { simulateAEO } = require('../services/aeoService');
+const { generateBrandVideo } = require('../services/veoService');
+const { generateAudioOverview } = require('../services/notebookService');
+const { logLeadToSheets } = require('../services/workspaceService');
+const { sendReviewRequest } = require('../services/reputationService');
 
 // Generate audit for a lead using Gemini API with Google Search Grounding
 router.post('/', auth, async (req, res) => {
@@ -138,10 +142,43 @@ router.post('/', auth, async (req, res) => {
         const businessDNA = await scanBusinessDNA(lead.websiteUrl);
         const aeoProof = await simulateAEO(`${lead.industry || 'Service'} in ${lead.city || 'Wedding'}`, lead.companyName);
 
-        // Update audit with additional Phase 2 insights if necessary 
-        // (In a real app, you'd add these fields to the Audit model first)
+        // VEO: Generate Video Pipeline asset
+        const videoData = await generateBrandVideo(lead.companyName, businessDNA);
+
+        // NotebookLM: Generate Audio Overview
+        const audioOverview = await generateAudioOverview(lead.id, {
+            companyName: lead.companyName,
+            totalScore
+        });
+
+        // Workspace: Log to Sheets
+        await logLeadToSheets({
+            companyName: lead.companyName,
+            websiteUrl: lead.websiteUrl,
+            totalScore
+        });
+
+        // Update lead with persistent insights
+        lead.businessDNA = businessDNA;
+        lead.aeoProof = aeoProof;
+        lead.veoData = videoData;
+        lead.audioData = audioOverview;
+        await lead.save();
+
+        // Update audit with new metadata
+        audit.businessDNA = businessDNA;
+        audit.aeoProof = aeoProof;
+        audit.audioOverviewUrl = audioOverview.audioUrl;
+        audit.details = {
+            videoUrl: videoData.videoUrl,
+            audioUrl: audioOverview.audioUrl,
+            brandVoice: businessDNA.brandVoice
+        };
+        await audit.save();
+
         console.log(`[POMELLI] DNA Profile for ${lead.companyName}:`, businessDNA);
         console.log(`[AEO SIM] Proof for ${lead.companyName}:`, aeoProof);
+        console.log(`[VEO] Video:`, videoData.videoUrl);
 
         res.status(201).json({ ...audit._doc, businessDNA, aeoProof });
     } catch (err) {
