@@ -59,5 +59,4 @@ jobs:
         with:
           app-name: 'agency-crm-backend'
           slot-name: 'Production'
-          resource-group: 'agency-crm'
           package: .
