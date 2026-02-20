@@ -22,13 +22,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/leads', leadRoutes);
 app.use('/api/audits', auditRoutes);
 app.use('/api/outreach', outreachRoutes);
+app.use('/api/reputation', require('./routes/reputation'));
 app.use('/api/portal', portalRoutes);
 app.use('/api/stripe', stripeRoutes);
 
-// Health check
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
 
 // Connect to MongoDB and start server
 mongoose.connect(process.env.MONGODB_URI)

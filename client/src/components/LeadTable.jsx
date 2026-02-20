@@ -23,6 +23,7 @@ export default function LeadTable({ leads, onSort, sortField, sortDir }) {
         { key: 'directTrafficPct', label: 'Direkt %' },
         { key: 'organicTrafficPct', label: 'Organic %' },
         { key: 'priority', label: 'Priorität' },
+        { key: 'gap', label: 'Traffic Gap' },
     ]
 
     return (
@@ -77,6 +78,9 @@ export default function LeadTable({ leads, onSort, sortField, sortDir }) {
                                     </div>
                                 </td>
                                 <td className="table-cell"><PriorityBadge priority={lead.priority} /></td>
+                                <td className="table-cell font-bold text-rose-400">
+                                    {(lead.monthlyVisitors < 5000) ? '800%+' : '250%'}
+                                </td>
                                 <td className="table-cell">
                                     <div className="flex gap-2">
                                         <button

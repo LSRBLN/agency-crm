@@ -1,0 +1,41 @@
+{
+  "applicationLogs": {
+    "azureBlobStorage": {
+      "level": "Off",
+      "retentionInDays": null,
+      "sasUrl": null
+    },
+    "azureTableStorage": {
+      "level": "Off",
+      "sasUrl": null
+    },
+    "fileSystem": {
+      "level": "Verbose"
+    }
+  },
+  "detailedErrorMessages": {
+    "enabled": false
+  },
+  "failedRequestsTracing": {
+    "enabled": false
+  },
+  "httpLogs": {
+    "azureBlobStorage": {
+      "enabled": false,
+      "retentionInDays": 3,
+      "sasUrl": null
+    },
+    "fileSystem": {
+      "enabled": true,
+      "retentionInDays": 3,
+      "retentionInMb": 100
+    }
+  },
+  "id": "/subscriptions/039ac08f-643f-4ba0-9e3c-15dff8996095/resourceGroups/agency-crm/providers/Microsoft.Web/sites/agency-crm-backend/config/logs",
+  "kind": null,
+  "location": "Germany West Central",
+  "name": "logs",
+  "resourceGroup": "agency-crm",
+  "tags": {},
+  "type": "Microsoft.Web/sites/config"
+}

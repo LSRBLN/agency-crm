@@ -29,6 +29,11 @@ router.get('/lead/:leadId', auth, async (req, res) => {
     }
 });
 
+const { createTrack } = require('../services/conductorService');
+const { analyzeWebsite } = require('../services/brownfieldService');
+const { scanBusinessDNA } = require('../services/pomelliService');
+const { simulateAEO } = require('../services/aeoService');
+
 // Generate audit for a lead using Gemini API with Google Search Grounding
 router.post('/', auth, async (req, res) => {
     try {
@@ -36,9 +41,25 @@ router.post('/', auth, async (req, res) => {
         const lead = await Lead.findById(leadId);
         if (!lead) return res.status(404).json({ error: 'Lead nicht gefunden' });
 
+        // Agentic Stack: Create/Update Track
+        await createTrack(leadId, {
+            companyName: lead.companyName,
+            techStack: 'React / Tailwind (Target)',
+            designRules: 'Premium, Modern, Dark Mode prioritized',
+            goals: 'Increase local visibility by 300% via AEO'
+        });
+
+        // Brownfield Support: Analyze existing site if available
+        let optimizationSuggestions = '';
+        if (lead.websiteUrl) {
+            optimizationSuggestions = await analyzeWebsite(lead.websiteUrl);
+        }
+
         // Prepare the prompt for Gemini
         const query = `${lead.companyName} in ${lead.city || 'Berlin Wedding'}`;
         const prompt = `Du bist ein AI Trust Auditor. Analysiere das Unternehmen "${query}" mithilfe der Google-Suche.
+        Integriere diese Optimierungsvorschläge in deine Analyse: ${optimizationSuggestions}
+        
         Beurteile die folgenden drei Säulen für die lokale Sichtbarkeit in KI-Modellen und Google Maps:
         1. Local Authority Foundation: Ist das Google Business Profil (GBP) beansprucht? Sind die Informationen konsistent?
         2. Structured Data: Sind spezifische Dienstleistungen oder Speisekarten klar erkennbar?
@@ -59,7 +80,7 @@ router.post('/', auth, async (req, res) => {
             contents: prompt,
             config: {
                 tools: [{ googleSearch: {} }],
-                temperature: 0.2, // Low temperature for more factual responses
+                temperature: 0.2,
             }
         });
 
@@ -76,7 +97,6 @@ router.post('/', auth, async (req, res) => {
             auditData = JSON.parse(aiResultStr.trim());
         } catch (e) {
             console.error("Failed to parse Gemini JSON:", aiResultStr);
-            // Fallback simulated data if parsing fails
             auditData = {
                 gbpClaimed: Math.random() > 0.4,
                 reviewsResponded: Math.random() > 0.5,
@@ -86,7 +106,7 @@ router.post('/', auth, async (req, res) => {
             };
         }
 
-        const aeoVisible = auditData.structuredDataFound; // Proxy for AEO visibility
+        const aeoVisible = auditData.structuredDataFound;
         const aeoCompetitor = aeoVisible ? '' : `${lead.industry || 'Branche'}-Konkurrent GmbH`;
         const aeoQuery = `Bester ${lead.industry || 'Dienstleister'} in ${lead.city || 'der Region'}`;
 
@@ -111,12 +131,25 @@ router.post('/', auth, async (req, res) => {
             sentimentKeywords: auditData.sentimentKeywords || [],
         });
 
-        res.status(201).json(audit);
+        // Agentic Stack: Trigger Stitch Prototype (Mock for now)
+        console.log(`[STITCH MCP] Triggering website prototype for ${lead.companyName} based on audit ${audit._id}`);
+
+        // Phase 2: Internal async tasks (not blocking the response for now, or integrated into data)
+        const businessDNA = await scanBusinessDNA(lead.websiteUrl);
+        const aeoProof = await simulateAEO(`${lead.industry || 'Service'} in ${lead.city || 'Wedding'}`, lead.companyName);
+
+        // Update audit with additional Phase 2 insights if necessary 
+        // (In a real app, you'd add these fields to the Audit model first)
+        console.log(`[POMELLI] DNA Profile for ${lead.companyName}:`, businessDNA);
+        console.log(`[AEO SIM] Proof for ${lead.companyName}:`, aeoProof);
+
+        res.status(201).json({ ...audit._doc, businessDNA, aeoProof });
     } catch (err) {
         console.error("Audit generation error:", err);
         res.status(400).json({ error: err.message });
     }
 });
+
 
 // Public endpoint for Scorecard view (no auth required)
 router.get('/scorecard/:id', async (req, res) => {

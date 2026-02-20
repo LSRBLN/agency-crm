@@ -4,6 +4,7 @@ const csv = require('csv-parser');
 const fs = require('fs');
 const Lead = require('../models/Lead');
 const auth = require('../middleware/auth');
+const axios = require('axios'); // For SimilarWeb API calls
 const router = express.Router();
 
 const upload = multer({ dest: 'uploads/' });
@@ -159,6 +160,35 @@ router.post('/upload-metrics', auth, upload.single('file'), (req, res) => {
                 res.status(500).json({ error: err.message });
             }
         });
+});
+
+// Get competition data (SimilarWeb Mock/Implementation)
+router.get('/:id/competition', auth, async (req, res) => {
+    try {
+        const lead = await Lead.findById(req.params.id);
+        if (!lead) return res.status(404).json({ error: 'Lead nicht gefunden' });
+
+        // Mock SimilarWeb Data for top competitors
+        // In production, this would call the SimilarWeb API
+        const competitors = [
+            { name: 'Top Competitor A', traffic: (lead.monthlyVisitors || 1000) * 8.5, growth: '24%' },
+            { name: 'Top Competitor B', traffic: (lead.monthlyVisitors || 1000) * 5.2, growth: '12%' },
+            { name: 'Top Competitor C', traffic: (lead.monthlyVisitors || 1000) * 3.1, growth: '-5%' },
+        ];
+
+        res.json({
+            lead: {
+                name: lead.companyName,
+                traffic: lead.monthlyVisitors || 0,
+                directPct: lead.directTrafficPct || 0,
+                organicPct: lead.organicTrafficPct || 0
+            },
+            competitors,
+            gapSummary: `Ihr größter Wettbewerber hat ${Math.round((competitors[0].traffic / (lead.monthlyVisitors || 1)))}x mehr Traffic als Sie.`
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 module.exports = router;

@@ -1,0 +1,42 @@
+[
+  {
+    "name": "FRONTEND_URL",
+    "slotSetting": false,
+    "value": "agency-crm-frontend-ahhrh3ebb7azbpdc.germanywestcentral-01.azurewebsites.net"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "slotSetting": false,
+    "value": "AIzaSyDvsW9YnQ0T83OqRsQg-muDZieTgF4-olw"
+  },
+  {
+    "name": "JWT_SECRET",
+    "slotSetting": false,
+    "value": "gemini-conductor-secret-2024"
+  },
+  {
+    "name": "ONGODB_URI",
+    "slotSetting": false,
+    "value": "mongodb+srv://rautdeepakdesign_db_user:FCPGRdQIL5mPLmAJ@cluster0.oy5ynpi.mongodb.net/?appName=Cluster0"
+  },
+  {
+    "name": "PORT",
+    "slotSetting": false,
+    "value": "8080"
+  },
+  {
+    "name": "MONGODB_URI",
+    "slotSetting": false,
+    "value": "mongodb+srv://rautdeepakdesign_db_user:FCPGRdQIL5mPLmAJ@cluster0.oy5ynpi.mongodb.net/?appName=Cluster0"
+  },
+  {
+    "name": "WEBSITE_HTTPLOGGING_RETENTION_DAYS",
+    "slotSetting": false,
+    "value": "3"
+  },
+  {
+    "name": "APP_TYPE",
+    "slotSetting": false,
+    "value": "backend"
+  }
+]
