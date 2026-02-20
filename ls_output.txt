@@ -1,0 +1,16 @@
+insgesamt 32
+drwxr-xr-x 1 xipx xipx  304 20. Feb 04:47 .
+drwxr-xr-x 1 xipx xipx  250 20. Feb 03:18 ..
+drwxr-xr-x 1 xipx xipx  206 20. Feb 04:20 client
+-rw-r--r-- 1 xipx xipx 3866 20. Feb 04:40 deploy_azure.md
+-rw-r--r-- 1 xipx xipx  133 20. Feb 04:19 dev.log
+-rw-r--r-- 1 xipx xipx  278 20. Feb 03:19 .env.example
+drwxr-xr-x 1 xipx xipx   92 20. Feb 04:47 .git
+-rw-r--r-- 1 xipx xipx   31 20. Feb 03:19 .gitignore
+-rw-r--r-- 1 xipx xipx    0 20. Feb 04:47 .git_initialized
+-rw-r--r-- 1 xipx xipx  270 20. Feb 03:56 install_client.log
+-rw-r--r-- 1 xipx xipx  146 20. Feb 03:51 install_server.log
+-rw-r--r-- 1 xipx xipx    0 20. Feb 04:47 ls_output.txt
+-rw-r--r-- 1 xipx xipx  402 20. Feb 03:19 package.json
+drwxr-xr-x 1 xipx xipx  176 20. Feb 04:33 server
+-rw-r--r-- 1 xipx xipx    6 20. Feb 03:51 test_output.txt
