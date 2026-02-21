@@ -26,6 +26,7 @@ jobs:
       - name: npm install
         run: |
           npm install
+          npm run build:client
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -57,6 +58,6 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'agency-crm-backend-v2'
+          app-name: 'agency-crm-backend'
           slot-name: 'Production'
           package: .

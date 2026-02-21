@@ -1,5 +1,13 @@
 # ☁️ Azure Deployment Guide (GitHub Student Pack)
 
+## ✅ Empfohlene "muss funktionieren"-Variante
+
+Nutze **eine** Azure Web App (`agency-crm-backend`) für Backend **und** ausgeliefertes Frontend (`client/dist`) und verwende **Supabase** als Datenbank.
+
+- Warum: Weniger Moving Parts, keine CORS-/Proxy-Probleme, schnellster stabiler Weg.
+- Namecheap dient dabei nur als **Domain/DNS** (CNAME auf Azure App).
+- Datenbank **nicht** auf Namecheap/cPanel mit hosten, das ist in der Praxis fehleranfälliger und schwerer zu warten.
+
 Mit dem GitHub Student Pack hast du Zugriff auf **Azure for Students** ($100 Guthaben & kostenlose Services). Das ist ideal, um dein CRM professionell zu hosten. 
 
 Wir teilen das Hosting auf zwei kostenlose/günstige Services auf:
@@ -59,7 +67,9 @@ Damit dein Backend auf Azure läuft, müssen die `.env` Variablen hinterlegt wer
 
 1. Gehe in deinem neuen App Service (`agency-crm-backend`) links im Menü auf **Umgebungsvariablen** (oder *Konfiguration*).
 2. Füge folgende App-Einstellungen hinzu:
-   - `MONGODB_URI` = `mongodb+srv://...` (dein Atlas Connection String)
+   - `SUPABASE_URL` = `https://<dein-projekt>.supabase.co`
+   - `SUPABASE_ANON_KEY` = `<dein-anon-key>`
+   - `SUPABASE_SERVICE_ROLE_KEY` = `<dein-service-role-key>` (nur im Backend)
    - `JWT_SECRET` = `gemini-conductor-secret-2024` (oder ein neues sicheres Passwort)
    - `PORT` = `8080` (Azure App Service Linux nutzt standardmäßig Port 8080)
    - `GEMINI_API_KEY` = `dein_key`
@@ -79,4 +89,4 @@ Da das Frontend nun auf einer externen URL läuft, muss es wissen, wo das Azure-
    `VITE_API_URL=https://agency-crm-backend.azurewebsites.net`
 3. Push die Änderungen auf GitHub. Die Azure GitHub Actions bauen Frontend und Backend nun automatisch mit den richtigen Verknüpfungen neu.
 
-**Das war's!** MIt MongoDB Atlas und Azure hast du nun eine hochskalierbare, kostenlose/sehr günstige Cloud-Infrastruktur aufgebaut.
+**Das war's!** Mit Supabase und Azure hast du nun eine hochskalierbare, kostenlose/sehr günstige Cloud-Infrastruktur aufgebaut.
