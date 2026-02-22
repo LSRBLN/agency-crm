@@ -255,7 +255,36 @@ router.get('/', async (req, res) => {
         if (error) throw error;
         res.json((data || []).map(mapAudit));
     } catch (err) {
-        res.status(500).json({ error: 'Audits konnten nicht geladen werden' });
+        console.error('Error fetching audits:', err?.message || err);
+        res.status(500).json({
+            error: 'Audits konnten nicht geladen werden',
+            detail: err?.message || String(err),
+        });
+    }
+});
+
+// GET latest audit for a given lead/contact
+router.get('/latest/by-lead/:contactId', async (req, res) => {
+    if (!ensureDb(res)) return;
+
+    try {
+        const contactId = req.params.contactId;
+        const { data, error } = await supabase
+            .from('audits')
+            .select('*')
+            .eq('lead_id', contactId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        if (error) throw error;
+        if (!data) {
+            return res.status(404).json({ error: 'Kein Audit gefunden' });
+        }
+
+        res.json(mapAudit(data));
+    } catch (err) {
+        res.status(500).json({ error: 'Audit konnte nicht geladen werden' });
     }
 });
 
@@ -481,6 +510,28 @@ router.post('/onsite-analysis/:contactId', async (req, res) => {
         res.json(payload);
     } catch (err) {
         res.status(500).json({ error: 'Vor-Ort Analyse fehlgeschlagen' });
+    }
+});
+
+// GET latest onsite analysis payload (if previously generated)
+router.get('/onsite-analysis/:contactId', async (req, res) => {
+    if (!ensureDb(res)) return;
+
+    try {
+        const contactId = req.params.contactId;
+        const latestOnsite = await getLatestActivityByType(contactId, 'onsite_analysis');
+        if (!latestOnsite?.description) {
+            return res.status(404).json({ error: 'Keine Vor-Ort Analyse vorhanden' });
+        }
+
+        const payload = safeJsonParse(latestOnsite.description);
+        if (!payload?.analysis || !payload?.contact) {
+            return res.status(404).json({ error: 'Keine Vor-Ort Analyse vorhanden' });
+        }
+
+        res.json(payload);
+    } catch (err) {
+        res.status(500).json({ error: 'Vor-Ort Analyse konnte nicht geladen werden' });
     }
 });
 

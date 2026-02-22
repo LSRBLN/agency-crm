@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import axios from 'axios'
 import { Zap, Eye, EyeOff } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 export default function Login({ onLogin }) {
+    const navigate = useNavigate()
     const [mode, setMode] = useState('login') // login | register
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -17,7 +19,11 @@ export default function Login({ onLogin }) {
         try {
             const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register'
             const res = await axios.post(endpoint, { email, password })
+            if (!res?.data?.token) {
+                throw new Error('Token fehlt in der Antwort')
+            }
             onLogin(res.data.token)
+            navigate('/', { replace: true })
         } catch (err) {
             setError(err.response?.data?.error || 'Fehler bei der Anmeldung')
         } finally {
@@ -48,6 +54,7 @@ export default function Login({ onLogin }) {
                 {/* Tabs */}
                 <div className="flex gap-1 p-1 bg-surface-800 rounded-xl mb-6">
                     <button
+                        type="button"
                         onClick={() => setMode('login')}
                         className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all ${mode === 'login' ? 'bg-brand-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-200'
                             }`}
@@ -55,6 +62,7 @@ export default function Login({ onLogin }) {
                         Anmelden
                     </button>
                     <button
+                        type="button"
                         onClick={() => setMode('register')}
                         className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all ${mode === 'register' ? 'bg-brand-600 text-white shadow-lg' : 'text-gray-400 hover:text-gray-200'
                             }`}

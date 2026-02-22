@@ -13,12 +13,8 @@ router.post('/create-checkout', auth, async (req, res) => {
     const { leadId, amount, description, successUrl, cancelUrl } = req.body;
 
     if (!stripe) {
-      // Graceful fallback when Stripe is not configured
-      const simulatedUrl = `https://checkout.stripe.demo/pay/setup-${leadId}?amount=${amount}&currency=eur`;
-      return res.json({
-        url: simulatedUrl,
-        mode: 'demo',
-        message: 'STRIPE_SECRET_KEY not configured - returning demo URL'
+      return res.status(503).json({
+        error: 'Stripe ist nicht konfiguriert'
       });
     }
 
@@ -56,8 +52,7 @@ router.post('/payment-link', auth, async (req, res) => {
     const { leadId, amount, description } = req.body;
 
     if (!stripe) {
-      const simulatedUrl = `https://checkout.stripe.demo/pay/setup-${leadId}?amount=${amount}&currency=eur`;
-      return res.json({ url: simulatedUrl, mode: 'demo' });
+      return res.status(503).json({ error: 'Stripe ist nicht konfiguriert' });
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -93,8 +88,7 @@ router.post('/audit-fee', auth, async (req, res) => {
     const amount = 500;
 
     if (!stripe) {
-      const simulatedUrl = `https://checkout.stripe.demo/pay/audit-${leadId}?amount=${amount}&currency=eur&items=ai-trust-audit`;
-      return res.json({ url: simulatedUrl, mode: 'demo' });
+      return res.status(503).json({ error: 'Stripe ist nicht konfiguriert' });
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -128,8 +122,7 @@ router.post('/audit-fee', auth, async (req, res) => {
 // Note: This route requires raw body parsing - configure express.raw() for this path in server.js
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   if (!stripe) {
-    console.warn('[STRIPE] Webhook received but Stripe is not configured');
-    return res.json({ received: true, mode: 'demo' });
+    return res.status(503).json({ error: 'Stripe ist nicht konfiguriert' });
   }
 
   const sig = req.headers['stripe-signature'];

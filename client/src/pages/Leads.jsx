@@ -2,8 +2,13 @@ import { useState, useEffect, useMemo } from 'react'
 import axios from 'axios'
 import CSVUploader from '../components/CSVUploader'
 import { Search, Filter } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { getFeatureFlags, subscribeFeatureFlags } from '../utils/featureFlags'
 
 export default function Leads() {
+    const navigate = useNavigate()
+    const [flags, setFlags] = useState(() => getFeatureFlags())
+    const ENABLE_SIMILARWEB = Boolean(flags?.similarweb)
     const [leads, setLeads] = useState([])
     const [scoredLeads, setScoredLeads] = useState([])
     const [search, setSearch] = useState('')
@@ -26,8 +31,21 @@ export default function Leads() {
     const [onsiteResult, setOnsiteResult] = useState(null)
     const [onsiteError, setOnsiteError] = useState('')
 
+    const [googleQuery, setGoogleQuery] = useState('')
+    const [googleNear, setGoogleNear] = useState('Berlin, Deutschland')
+    const [googleItems, setGoogleItems] = useState([])
+    const [googleLoading, setGoogleLoading] = useState(false)
+    const [googleError, setGoogleError] = useState('')
+    const [googleImportingId, setGoogleImportingId] = useState('')
+    const [googleMessage, setGoogleMessage] = useState('')
+    const [googleIncludePageSpeed, setGoogleIncludePageSpeed] = useState(false)
+    const [googleGridLoadingId, setGoogleGridLoadingId] = useState('')
+    const [googleBatchLoading, setGoogleBatchLoading] = useState(false)
+
     const token = localStorage.getItem('token')
     const headers = { Authorization: `Bearer ${token}` }
+
+    useEffect(() => subscribeFeatureFlags(setFlags), [])
 
     async function loadLeads() {
         setLoading(true)
@@ -117,6 +135,155 @@ export default function Leads() {
             setCompareError(err.response?.data?.error || 'Similarweb-Vergleich fehlgeschlagen')
         } finally {
             setCompareLoading(false)
+        }
+
+    async function runGoogleLeadSearch() {
+        setGoogleLoading(true)
+        setGoogleError('')
+        setGoogleMessage('')
+        try {
+            const response = await axios.get('/api/lead-search', {
+                headers,
+                params: {
+                    q: googleQuery || undefined,
+                    near: googleNear || undefined,
+                    limit: 10,
+                    pagespeed: flags?.pageSpeedInsights && googleIncludePageSpeed ? 1 : 0,
+                },
+            })
+
+            setGoogleItems(Array.isArray(response.data?.items) ? response.data.items : [])
+        } catch (err) {
+            setGoogleError(err.response?.data?.error || 'Lead-Suche fehlgeschlagen')
+        } finally {
+            setGoogleLoading(false)
+        }
+    }
+
+    async function importGoogleLead(item) {
+        if (!item?.placeId) return
+        setGoogleImportingId(item.placeId)
+        setGoogleError('')
+        setGoogleMessage('')
+        try {
+            const response = await axios.post('/api/lead-search/import', {
+                placeId: item.placeId,
+            }, { headers })
+
+            const created = response.data?.contact
+            const scoring = response.data?.scoring
+            const enrichment = response.data?.enrichment
+            const enrichmentError = response.data?.enrichmentError
+
+            setGoogleItems((prev) => prev.map((x) => {
+                if (x.placeId !== item.placeId) return x
+                return {
+                    ...x,
+                    importedContactId: created?.id || null,
+                    scoring: scoring || null,
+                    enrichment: enrichment || null,
+                    enrichmentError: enrichmentError || null,
+                }
+            }))
+
+            if (scoring) {
+                const enrichHint = enrichmentError ? ` (${enrichmentError})` : ''
+                setGoogleMessage(`Import OK: ${scoring.priority?.toUpperCase?.() || scoring.priority} • Score ${scoring.score}${enrichHint}`)
+            }
+
+            if (created?.id) {
+                await loadLeads()
+                navigate(`/leads/${created.id}`)
+            }
+        } catch (err) {
+            setGoogleError(err.response?.data?.error || 'Import fehlgeschlagen')
+        } finally {
+            setGoogleImportingId('')
+        }
+    }
+
+    function gridCellClass(rank) {
+        if (rank === null || rank === undefined) return 'bg-surface-800/40 text-surface-500'
+        const r = Number(rank)
+        if (!Number.isFinite(r)) return 'bg-surface-800/40 text-surface-500'
+        if (r <= 3) return 'bg-emerald-500/20 text-emerald-200'
+        if (r <= 10) return 'bg-amber-500/20 text-amber-200'
+        return 'bg-rose-500/15 text-rose-200'
+    }
+
+    async function runGridRank(item) {
+        if (!item?.placeId) return
+        setGoogleGridLoadingId(item.placeId)
+        setGoogleError('')
+        try {
+            const response = await axios.get('/api/lead-search/grid-rank', {
+                headers,
+                params: {
+                    q: googleQuery || undefined,
+                    near: googleNear || undefined,
+                    placeId: item.placeId,
+                    save: 1,
+                    gridSize: 3,
+                    stepKm: 1.5,
+                    radius: 5000,
+                    limit: 20,
+                },
+            })
+
+            setGoogleItems((prev) => prev.map((x) => {
+                if (x.placeId !== item.placeId) return x
+                return { ...x, gridRank: response.data }
+            }))
+        } catch (err) {
+            setGoogleError(err.response?.data?.error || 'Grid Rank fehlgeschlagen')
+        } finally {
+            setGoogleGridLoadingId('')
+        }
+    }
+
+    async function runGridRankBatchTop() {
+        if (!googleItems.length || !googleQuery.trim() || !googleNear.trim()) return
+        setGoogleBatchLoading(true)
+        setGoogleError('')
+        setGoogleMessage('')
+        try {
+            const placeIds = googleItems
+                .map((x) => x?.placeId)
+                .filter(Boolean)
+                .slice(0, 5)
+
+            const resp = await axios.post('/api/lead-search/grid-rank/batch', {
+                q: googleQuery,
+                near: googleNear,
+                placeIds,
+                gridSize: 3,
+                stepKm: 1.5,
+                radius: 5000,
+                limit: 20,
+            }, { headers })
+
+            const byPlace = new Map((resp.data?.results || []).map((r) => [r.placeId, r]))
+            setGoogleItems((prev) => prev.map((x) => {
+                const hit = byPlace.get(x.placeId)
+                if (!hit || hit.error) return x
+                // We don't have full matrix in batch response; store summary so list shows progress.
+                return {
+                    ...x,
+                    gridRank: {
+                        ...(x.gridRank || {}),
+                        summary: hit.summary,
+                        gridSize: hit.gridSize,
+                        savedScanId: hit.savedScanId,
+                    },
+                }
+            }))
+
+            const ok = (resp.data?.results || []).filter((r) => r && !r.error).length
+            setGoogleMessage(`Grid Rank Batch: ${ok}/${placeIds.length} gespeichert (siehe Map Dashboard)`) 
+        } catch (err) {
+            setGoogleError(err.response?.data?.error || 'Batch Grid Rank fehlgeschlagen')
+        } finally {
+            setGoogleBatchLoading(false)
         }
     }
 
@@ -237,51 +404,257 @@ export default function Leads() {
 
             <CSVUploader onUpload={handleCSVUpload} />
 
+            {ENABLE_SIMILARWEB && (
+                <div className="crm-card p-4 space-y-3">
+                    <div>
+                        <h2 className="text-lg font-semibold text-white">Similarweb Direktvergleich</h2>
+                        <p className="text-xs text-surface-400">Vergleiche potenzielle Kunden direkt mit Wettbewerbern (Traffic + Kanalanteile).</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <input
+                            type="text"
+                            value={primaryDomain}
+                            onChange={(e) => setPrimaryDomain(e.target.value)}
+                            placeholder="Kunden-Domain (z. B. kunde.de)"
+                            className="input-field"
+                        />
+                        <input
+                            type="text"
+                            value={competitorDomain}
+                            onChange={(e) => setCompetitorDomain(e.target.value)}
+                            placeholder="Wettbewerber-Domain"
+                            className="input-field"
+                        />
+                        <button onClick={runCompare} disabled={compareLoading} className="btn-primary disabled:opacity-50">
+                            {compareLoading ? 'Vergleiche...' : 'Jetzt vergleichen'}
+                        </button>
+                    </div>
+                    {compareError && <p className="text-xs text-rose-300">{compareError}</p>}
+                    {enrichMessage && <p className="text-xs text-brand-300">{enrichMessage}</p>}
+                    {auditMessage && <p className="text-xs text-amber-300">{auditMessage}</p>}
+                    {onsiteError && <p className="text-xs text-rose-300">{onsiteError}</p>}
+                    {compareResult && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                            <div className="bg-surface-800/50 rounded p-3">
+                                <p className="text-surface-400 mb-1">{compareResult.primary?.domain}</p>
+                                <p className="text-white font-semibold">{Number(compareResult.primary?.summary?.latestVisits || 0).toLocaleString('de-DE')} Visits</p>
+                                <p className="text-surface-400 text-xs">Direct: {(Number(compareResult.primary?.summary?.directShare || 0) * 100).toFixed(1)}%</p>
+                            </div>
+                            <div className="bg-surface-800/50 rounded p-3">
+                                <p className="text-surface-400 mb-1">{compareResult.competitor?.domain}</p>
+                                <p className="text-white font-semibold">{Number(compareResult.competitor?.summary?.latestVisits || 0).toLocaleString('de-DE')} Visits</p>
+                                <p className="text-surface-400 text-xs">Search: {(Number(compareResult.competitor?.summary?.searchShare || 0) * 100).toFixed(1)}%</p>
+                            </div>
+                            <div className="bg-surface-800/50 rounded p-3">
+                                <p className="text-surface-400 mb-1">Traffic Gap</p>
+                                <p className="text-white font-semibold">{Number(compareResult.comparison?.trafficGap || 0).toLocaleString('de-DE')}</p>
+                                <p className="text-xs text-surface-400">Stärker: {compareResult.comparison?.strongerDomain || '-'}</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
             <div className="crm-card p-4 space-y-3">
                 <div>
-                    <h2 className="text-lg font-semibold text-white">Similarweb Direktvergleich</h2>
-                    <p className="text-xs text-surface-400">Vergleiche potenzielle Kunden direkt mit Wettbewerbern (Traffic + Kanalanteile).</p>
+                    <h2 className="text-lg font-semibold text-white">Lead Suche (Google)</h2>
+                    <p className="text-xs text-surface-400">Suche wie bei Google/Maps, importiere passende Kunden und nutze sofort Intel (Website Tech, Sichtbarkeit, Speed, PageSpeed Insights, Grid Rank Scan).</p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                     <input
                         type="text"
-                        value={primaryDomain}
-                        onChange={(e) => setPrimaryDomain(e.target.value)}
-                        placeholder="Kunden-Domain (z. B. kunde.de)"
-                        className="input-field"
+                        value={googleQuery}
+                        onChange={(e) => setGoogleQuery(e.target.value)}
+                        placeholder="z. B. Dachdecker, Zahnarzt, Steuerberater"
+                        className="input-field md:col-span-3"
                     />
                     <input
                         type="text"
-                        value={competitorDomain}
-                        onChange={(e) => setCompetitorDomain(e.target.value)}
-                        placeholder="Wettbewerber-Domain"
-                        className="input-field"
+                        value={googleNear}
+                        onChange={(e) => setGoogleNear(e.target.value)}
+                        placeholder="Ort (z. B. Berlin, Deutschland)"
+                        className="input-field md:col-span-1"
                     />
-                    <button onClick={runCompare} disabled={compareLoading} className="btn-primary disabled:opacity-50">
-                        {compareLoading ? 'Vergleiche...' : 'Jetzt vergleichen'}
+                    <button
+                        onClick={runGoogleLeadSearch}
+                        disabled={googleLoading || !googleQuery.trim()}
+                        className="btn-primary disabled:opacity-50 md:col-span-1"
+                    >
+                        {googleLoading ? 'Suche...' : 'Suchen'}
                     </button>
                 </div>
-                {compareError && <p className="text-xs text-rose-300">{compareError}</p>}
-                {enrichMessage && <p className="text-xs text-brand-300">{enrichMessage}</p>}
-                {auditMessage && <p className="text-xs text-amber-300">{auditMessage}</p>}
-                {onsiteError && <p className="text-xs text-rose-300">{onsiteError}</p>}
-                {compareResult && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                        <div className="bg-surface-800/50 rounded p-3">
-                            <p className="text-surface-400 mb-1">{compareResult.primary?.domain}</p>
-                            <p className="text-white font-semibold">{Number(compareResult.primary?.summary?.latestVisits || 0).toLocaleString('de-DE')} Visits</p>
-                            <p className="text-surface-400 text-xs">Direct: {(Number(compareResult.primary?.summary?.directShare || 0) * 100).toFixed(1)}%</p>
+
+                {(flags?.gridRank || flags?.mapDashboard) && (
+                    <div className="flex items-center gap-2">
+                        {flags?.gridRank && (
+                            <button
+                                className="btn-secondary text-xs"
+                                onClick={runGridRankBatchTop}
+                                disabled={googleBatchLoading || googleLoading || googleItems.length === 0 || !googleQuery.trim()}
+                                title="Grid Rank Scan für die Top Ergebnisse speichern"
+                            >
+                                {googleBatchLoading ? 'Batch...' : 'Grid Rank Top 5'}
+                            </button>
+                        )}
+                        {flags?.mapDashboard && (
+                            <a className="text-xs text-brand-300 hover:underline" href="/map-dashboard">Map Dashboard öffnen</a>
+                        )}
+                    </div>
+                )}
+
+                {googleError && <p className="text-xs text-rose-300">{googleError}</p>}
+                {googleMessage && <p className="text-xs text-brand-300">{googleMessage}</p>}
+
+                <div className="flex flex-col gap-2">
+                    <p className="text-xs text-surface-400">Hinweis: Traffic (Similarweb) ist kostenpflichtig und hier deaktiviert. Wir nutzen stattdessen kostenlose Proxy-Signale (Reviews, Visibility, Speed, SEO).</p>
+                    {flags?.pageSpeedInsights && (
+                        <div className="flex items-center gap-2 text-xs text-surface-400">
+                            <input
+                                id="google-pagespeed"
+                                type="checkbox"
+                                className="accent-brand-400"
+                                checked={googleIncludePageSpeed}
+                                onChange={(e) => setGoogleIncludePageSpeed(e.target.checked)}
+                            />
+                            <label htmlFor="google-pagespeed" className="cursor-pointer">
+                                PageSpeed Insights (Lighthouse Scores) laden (langsamer)
+                            </label>
                         </div>
-                        <div className="bg-surface-800/50 rounded p-3">
-                            <p className="text-surface-400 mb-1">{compareResult.competitor?.domain}</p>
-                            <p className="text-white font-semibold">{Number(compareResult.competitor?.summary?.latestVisits || 0).toLocaleString('de-DE')} Visits</p>
-                            <p className="text-surface-400 text-xs">Search: {(Number(compareResult.competitor?.summary?.searchShare || 0) * 100).toFixed(1)}%</p>
-                        </div>
-                        <div className="bg-surface-800/50 rounded p-3">
-                            <p className="text-surface-400 mb-1">Traffic Gap</p>
-                            <p className="text-white font-semibold">{Number(compareResult.comparison?.trafficGap || 0).toLocaleString('de-DE')}</p>
-                            <p className="text-xs text-surface-400">Stärker: {compareResult.comparison?.strongerDomain || '-'}</p>
-                        </div>
+                    )}
+                </div>
+
+                {googleItems.length > 0 && (
+                    <div className="space-y-2">
+                        {googleItems.map((item) => (
+                            <div key={item.placeId} className="bg-surface-800/40 rounded p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                                <div className="min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        {item.googleRank && <span className="badge-neutral">#{item.googleRank}</span>}
+                                        <p className="text-sm text-white font-semibold truncate">{item.name || '-'}</p>
+                                    </div>
+                                    <p className="text-xs text-surface-400 truncate">{item.address || '-'}</p>
+                                    <div className="text-xs text-surface-400 mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                                        {item.phone && <span>{item.phone}</span>}
+                                        {item.website ? (
+                                            <a className="text-brand-300 hover:underline" href={item.website} target="_blank" rel="noreferrer">Website</a>
+                                        ) : (
+                                            <span className="badge-error">Keine Website</span>
+                                        )}
+                                        {item.site?.platform?.name && item.site.platform.name !== 'Unbekannt' && (
+                                            <span className="badge-info">{item.site.platform.name}</span>
+                                        )}
+                                        {item.site?.platform?.name === 'Unbekannt' && item.website && (
+                                            <span className="badge-neutral">Technik unbekannt</span>
+                                        )}
+                                        {item.rating && <span>Rating: {item.rating} ({item.userRatingsTotal || 0})</span>}
+                                        {typeof item.site?.seo?.responseTimeMs === 'number' && (
+                                            <span>TTFB: {item.site.seo.responseTimeMs}ms</span>
+                                        )}
+                                        {typeof item.site?.visibility?.score === 'number' && (
+                                            <span className="badge-neutral">Visibility: {item.site.visibility.grade} ({item.site.visibility.score})</span>
+                                        )}
+                                        {typeof item.pagespeed?.scores?.seo === 'number' && (
+                                            <span className="badge-info">PSI SEO: {item.pagespeed.scores.seo}</span>
+                                        )}
+                                        {typeof item.pagespeed?.scores?.performance === 'number' && (
+                                            <span className="badge-info">PSI Perf: {item.pagespeed.scores.performance}</span>
+                                        )}
+                                    </div>
+
+                                    {item.scoring && (
+                                        <div className="mt-2 text-xs text-surface-300 flex flex-wrap gap-x-3 gap-y-1">
+                                            <span className="text-white/80">Score: <span className="font-semibold">{item.scoring.score}</span> ({item.scoring.priority})</span>
+                                            {typeof item.popularity?.score === 'number' && (
+                                                <span>Popularity: {item.popularity.tier} ({item.popularity.score})</span>
+                                            )}
+                                            {item.enrichmentError && <span className="text-amber-300">{item.enrichmentError}</span>}
+                                        </div>
+                                    )}
+
+                                    <details className="mt-2">
+                                        <summary className="text-xs text-brand-300 cursor-pointer select-none">Intel anzeigen</summary>
+                                        <div className="mt-2 text-xs text-surface-300 space-y-1">
+                                            <p><span className="text-surface-500">Query:</span> {item.googleQuery || '-'} <span className="text-surface-500">Rank:</span> {item.googleRank || '-'}</p>
+                                            <p><span className="text-surface-500">Domain:</span> {item.domain || '-'}</p>
+                                            <p><span className="text-surface-500">HTTP:</span> {item.site?.httpStatus ?? '-'} <span className="text-surface-500">HTTPS:</span> {item.site?.seo?.https ? 'ja' : 'nein'}</p>
+                                            {typeof item.site?.visibility?.score === 'number' && (
+                                                <p><span className="text-surface-500">Visibility:</span> {item.site.visibility.grade} ({item.site.visibility.score}) · {Array.isArray(item.site.visibility.reasons) ? item.site.visibility.reasons.join(', ') : ''}</p>
+                                            )}
+                                            <p><span className="text-surface-500">Index:</span> {item.site?.seo?.robotsNoindex ? <span className="text-rose-300">noindex</span> : 'ok'}</p>
+                                            <p><span className="text-surface-500">Title:</span> {item.site?.seo?.title || '-'}</p>
+                                            <p><span className="text-surface-500">Meta:</span> {item.site?.seo?.metaDescription || '-'}</p>
+                                            <p><span className="text-surface-500">Schema:</span> {item.site?.seo?.hasSchemaOrg ? 'ja' : 'nein'} <span className="text-surface-500">OG:</span> {item.site?.seo?.hasOpenGraph ? 'ja' : 'nein'} <span className="text-surface-500">H1:</span> {item.site?.seo?.hasH1 ? 'ja' : 'nein'}</p>
+
+                                            {typeof item.popularity?.score === 'number' && (
+                                                <p><span className="text-surface-500">Popularity:</span> {item.popularity.tier} ({item.popularity.score}) · {Array.isArray(item.popularity.reasons) ? item.popularity.reasons.join(', ') : ''}</p>
+                                            )}
+
+                                            {(item.pagespeed?.scores || item.pagespeed?.error) && (
+                                                <div className="pt-2">
+                                                    <p className="text-surface-500">PageSpeed Insights</p>
+                                                    {item.pagespeed?.error ? (
+                                                        <p className="text-amber-300">{item.pagespeed.error}</p>
+                                                    ) : (
+                                                        <div className="space-y-1">
+                                                            <p>Perf {item.pagespeed.scores.performance ?? '-'} · SEO {item.pagespeed.scores.seo ?? '-'} · Best {item.pagespeed.scores.bestPractices ?? '-'} · A11y {item.pagespeed.scores.accessibility ?? '-'}</p>
+                                                            <p className="text-surface-400">LCP {item.pagespeed.metrics?.lcpMs ? Math.round(item.pagespeed.metrics.lcpMs) + 'ms' : '-'} · FCP {item.pagespeed.metrics?.fcpMs ? Math.round(item.pagespeed.metrics.fcpMs) + 'ms' : '-'} · TBT {item.pagespeed.metrics?.tbtMs ? Math.round(item.pagespeed.metrics.tbtMs) + 'ms' : '-'} · CLS {typeof item.pagespeed.metrics?.cls === 'number' ? item.pagespeed.metrics.cls.toFixed(2) : '-'}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {item.gridRank?.matrix && (
+                                                <div className="pt-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <p className="text-surface-500">Grid Rank (Maps)</p>
+                                                        <p className="text-surface-500">Best {item.gridRank.summary?.best ?? '-'} · Avg {item.gridRank.summary?.avg ?? '-'} · Found {item.gridRank.summary?.found ?? 0}/{item.gridRank.summary?.total ?? 0}</p>
+                                                    </div>
+                                                    <div className="mt-2 inline-block">
+                                                        {item.gridRank.matrix.map((row, rIdx) => (
+                                                            <div key={rIdx} className="flex gap-1 mb-1">
+                                                                {row.map((cell, cIdx) => (
+                                                                    <div
+                                                                        key={`${rIdx}-${cIdx}`}
+                                                                        className={`w-9 h-8 rounded flex items-center justify-center text-[11px] ${gridCellClass(cell)}`}
+                                                                        title={cell ? `Rank ${cell}` : 'nicht in Top 20'}
+                                                                    >
+                                                                        {cell ?? '–'}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <p className="text-surface-500 mt-1">Grid {item.gridRank.gridSize}×{item.gridRank.gridSize} · Step {item.gridRank.stepKm}km · Radius {item.gridRank.radius}m · Limit {item.gridRank.limit}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </details>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                    {item.googleMapsUrl && (
+                                        <a className="btn-secondary text-xs" href={item.googleMapsUrl} target="_blank" rel="noreferrer">Maps</a>
+                                    )}
+                                    {flags?.gridRank && (
+                                        <button
+                                            className="btn-secondary text-xs"
+                                            onClick={() => runGridRank(item)}
+                                            disabled={googleGridLoadingId === item.placeId || !googleQuery.trim()}
+                                            title="Local Grid Rank Scan"
+                                        >
+                                            {googleGridLoadingId === item.placeId ? 'Grid...' : 'Grid Rank'}
+                                        </button>
+                                    )}
+                                    <button
+                                        className="btn-primary text-xs"
+                                        onClick={() => importGoogleLead(item)}
+                                        disabled={googleImportingId === item.placeId}
+                                    >
+                                        {googleImportingId === item.placeId ? 'Import...' : 'Importieren'}
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 )}
             </div>
@@ -350,7 +723,15 @@ export default function Leads() {
                         <tbody>
                             {!loading && visibleLeads.map((lead) => (
                                 <tr key={lead.id} className="hover:bg-surface-700/30">
-                                    <td className="table-cell font-medium text-white">{lead.name || '-'}</td>
+                                    <td className="table-cell font-medium text-white">
+                                        <button
+                                            className="hover:underline"
+                                            onClick={() => navigate(`/leads/${lead.id}`)}
+                                            title="Lead Report öffnen"
+                                        >
+                                            {lead.name || lead.company || '-'}
+                                        </button>
+                                    </td>
                                     <td className="table-cell">{lead.company || '-'}</td>
                                     <td className="table-cell text-surface-400">{lead.email || lead.phone || '-'}</td>
                                     <td className="table-cell">{lead.status || '-'}</td>
@@ -362,22 +743,26 @@ export default function Leads() {
                                     <td className="table-cell text-surface-400">{lead.created_at ? new Date(lead.created_at).toLocaleDateString('de-DE') : '-'}</td>
                                     <td className="table-cell">
                                         <div className="flex items-center gap-2">
-                                            <button
-                                                className="btn-secondary text-xs"
-                                                onClick={() => setPrimaryDomain(inferDomainFromLead(lead))}
-                                                title="Domain in Vergleich übernehmen"
-                                            >
-                                                Als Kunde wählen
-                                            </button>
-                                            <button
-                                                className="btn-primary text-xs"
-                                                onClick={() => enrichLead(lead)}
-                                                disabled={enrichingLeadId === lead.id}
-                                                title="Similarweb Snapshot speichern"
-                                            >
-                                                {enrichingLeadId === lead.id ? 'Enrich...' : 'Enrich'}
-                                            </button>
-                                            <button className="btn-secondary text-xs" onClick={() => loadHistory(lead)}>History</button>
+                                            {ENABLE_SIMILARWEB && (
+                                                <>
+                                                    <button
+                                                        className="btn-secondary text-xs"
+                                                        onClick={() => setPrimaryDomain(inferDomainFromLead(lead))}
+                                                        title="Domain in Vergleich übernehmen"
+                                                    >
+                                                        Als Kunde wählen
+                                                    </button>
+                                                    <button
+                                                        className="btn-primary text-xs"
+                                                        onClick={() => enrichLead(lead)}
+                                                        disabled={enrichingLeadId === lead.id}
+                                                        title="Similarweb Snapshot speichern"
+                                                    >
+                                                        {enrichingLeadId === lead.id ? 'Enrich...' : 'Enrich'}
+                                                    </button>
+                                                    <button className="btn-secondary text-xs" onClick={() => loadHistory(lead)}>History</button>
+                                                </>
+                                            )}
                                             <button className="btn-secondary text-xs" onClick={() => runTrustAudit(lead)}>Trust Audit</button>
                                             <button
                                                 className="btn-primary text-xs"
@@ -401,7 +786,7 @@ export default function Leads() {
                 </div>
             </div>
 
-            {historyLeadId && (
+            {ENABLE_SIMILARWEB && historyLeadId && (
                 <div className="crm-card p-4">
                     <h3 className="text-white font-semibold mb-3">Similarweb History ({historyLeadId})</h3>
                     {historyLoading ? (

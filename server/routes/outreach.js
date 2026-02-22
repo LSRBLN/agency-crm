@@ -1,129 +1,246 @@
 const express = require('express');
-const Outreach = require('../models/Outreach');
-const Lead = require('../models/Lead');
-const Audit = require('../models/Audit');
-const auth = require('../middleware/auth');
-const { interpolateTemplate } = require('../utils/emailTemplates');
 const router = express.Router();
+const { supabase } = require('../services/supabaseClient');
+const auth = require('../middleware/auth');
 
-// Get all outreach drafts
-router.get('/', auth, async (req, res) => {
+router.use(auth);
+
+function ensureDb(res) {
+    if (!supabase) {
+        res.status(503).json({ error: 'Datenbank nicht konfiguriert' });
+        return false;
+    }
+    return true;
+}
+
+function parseDescription(description) {
+    if (!description || typeof description !== 'string') {
+        return {};
+    }
+
     try {
-        const drafts = await Outreach.find().sort({ createdAt: -1 });
-        res.json(drafts);
+        return JSON.parse(description);
+    } catch {
+        return {};
+    }
+}
+
+function mapOutreach(record) {
+    const details = parseDescription(record.description);
+    return {
+        _id: record.id,
+        templateName: record.title,
+        subject: details.subject || record.title,
+        channel: details.channel || 'email',
+        status: details.status || 'draft',
+        sentAt: details.sentAt || null,
+        recipient: details.recipient || '',
+        messages: Array.isArray(details.messages) ? details.messages : [],
+        createdAt: record.created_at,
+    };
+}
+
+// GET all outreach
+router.get('/', async (req, res) => {
+    if (!ensureDb(res)) return;
+
+    try {
+        const { data, error } = await supabase
+            .from('activities')
+            .select('*')
+            .eq('type', 'outreach')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        res.json((data || []).map(mapOutreach));
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Outreach konnte nicht geladen werden' });
     }
 });
 
-// Create outreach draft (triggered after audit)
-router.post('/', auth, async (req, res) => {
+// POST create outreach
+router.post('/', async (req, res) => {
+    if (!ensureDb(res)) return;
+
     try {
-        const { leadId, auditId, templateKey = 'aiGuilt' } = req.body;
-        const lead = await Lead.findById(leadId);
-        if (!lead) return res.status(404).json({ error: 'Lead nicht gefunden' });
-
-        const audit = auditId ? await Audit.findById(auditId) : await Audit.findOne({ leadId }).sort({ createdAt: -1 });
-
-        // Define pricing structure based on pitch type
-        const pricing = {
-            aiGuilt: 950,
-            voiceAgent: 1450,
-            quickWin: 450,
-            highTicket: 1950
-        };
-        const amount = pricing[templateKey] || 950;
-
-        const variables = {
-            companyName: lead.companyName,
-            websiteUrl: lead.websiteUrl,
-            score: audit?.totalScore || '?',
-            competitor: audit?.aeoCompetitor || 'Ihr Wettbewerber',
-            auditLink: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/audit/${lead._id}`,
-            setupFeeLink: `https://checkout.stripe.demo/pay/setup-${lead._id}?amount=${amount}&currency=eur`,
+        const payload = {
+            title: req.body.templateName || req.body.subject || 'Outreach',
+            type: 'outreach',
+            description: JSON.stringify({
+                subject: req.body.subject || req.body.templateName || 'Outreach',
+                recipient: req.body.recipient || '',
+                channel: req.body.channel || 'email',
+                status: req.body.status || 'draft',
+                sentAt: req.body.sentAt || null,
+                messages: Array.isArray(req.body.messages) ? req.body.messages : [],
+            }),
+            completed: false,
         };
 
-        const email = interpolateTemplate(templateKey, variables);
-        if (!email) return res.status(400).json({ error: 'Template nicht gefunden' });
+        const { data, error } = await supabase
+            .from('activities')
+            .insert([payload])
+            .select('*')
+            .single();
 
-        const draft = await Outreach.create({
-            leadId,
-            auditId: audit?._id,
-            companyName: lead.companyName,
-            email: lead.email,
-            subject: email.subject,
-            body: email.body,
-            status: 'draft',
-        });
-
-        res.status(201).json(draft);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
-    }
-});
-
-// Send an outreach email
-router.post('/:id/send', auth, async (req, res) => {
-    try {
-        const draft = await Outreach.findById(req.params.id);
-        if (!draft) return res.status(404).json({ error: 'Draft not found' });
-
-        if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-            return res.status(400).json({
-                error: 'SMTP not configured',
-                message: 'Set SMTP_USER and SMTP_PASS environment variables to enable email sending'
-            });
+        if (error || !data) {
+            throw error || new Error('Outreach konnte nicht erstellt werden');
         }
 
-        const nodemailer = require('nodemailer');
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: parseInt(process.env.SMTP_PORT || '587'),
-            secure: false,
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS
-            }
-        });
-
-        // Get the lead for email address
-        const lead = await Lead.findById(draft.leadId);
-        if (!lead || !lead.email) {
-            return res.status(400).json({ error: 'Lead has no email address' });
-        }
-
-        await transporter.sendMail({
-            from: `"Anti-Gravity Agency" <${process.env.SMTP_USER}>`,
-            to: lead.email,
-            subject: draft.subject || `Ihre digitale Sichtbarkeit in Berlin Wedding`,
-            html: draft.body || draft.content,
-            text: draft.plainText || draft.body?.replace(/<[^>]*>/g, '') || ''
-        });
-
-        // Update draft status
-        draft.status = 'sent';
-        draft.sentAt = new Date();
-        await draft.save();
-
-        res.json({
-            success: true,
-            message: `Email sent to ${lead.email}`,
-            sentAt: draft.sentAt
-        });
-    } catch (error) {
-        console.error('[OUTREACH] Send error:', error.message);
-        res.status(500).json({ error: error.message });
+        res.status(201).json(mapOutreach(data));
+    } catch (err) {
+        res.status(500).json({ error: 'Outreach konnte nicht erstellt werden' });
     }
 });
 
-// Update draft status (e.g., mark as sent)
-router.patch('/:id', auth, async (req, res) => {
+// POST send outreach
+router.post('/:id/send', async (req, res) => {
+    if (!ensureDb(res)) return;
+
     try {
-        const draft = await Outreach.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!draft) return res.status(404).json({ error: 'Entwurf nicht gefunden' });
-        res.json(draft);
+        const { data: existing, error: existingError } = await supabase
+            .from('activities')
+            .select('*')
+            .eq('id', req.params.id)
+            .eq('type', 'outreach')
+            .single();
+
+        if (existingError || !existing) {
+            return res.status(404).json({ error: 'Outreach nicht gefunden' });
+        }
+
+        const details = parseDescription(existing.description);
+        const sentAt = new Date().toISOString();
+        const updatedDescription = JSON.stringify({
+            ...details,
+            status: 'sent',
+            sentAt,
+        });
+
+        const { data, error } = await supabase
+            .from('activities')
+            .update({
+                description: updatedDescription,
+                completed: true,
+                due_date: sentAt,
+            })
+            .eq('id', req.params.id)
+            .select('*')
+            .single();
+
+        if (error || !data) {
+            throw error || new Error('Outreach konnte nicht versendet werden');
+        }
+
+        res.json(mapOutreach(data));
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(500).json({ error: 'Outreach konnte nicht versendet werden' });
+    }
+});
+
+router.post('/:id/message', async (req, res) => {
+    if (!ensureDb(res)) return;
+
+    try {
+        const { data: existing, error: existingError } = await supabase
+            .from('activities')
+            .select('*')
+            .eq('id', req.params.id)
+            .eq('type', 'outreach')
+            .single();
+
+        if (existingError || !existing) {
+            return res.status(404).json({ error: 'Outreach nicht gefunden' });
+        }
+
+        const details = parseDescription(existing.description);
+        const messages = Array.isArray(details.messages) ? details.messages : [];
+        const text = String(req.body.text || '').trim();
+
+        if (!text) {
+            return res.status(400).json({ error: 'text ist erforderlich' });
+        }
+
+        messages.push({
+            direction: req.body.direction || 'inbound',
+            channel: req.body.channel || details.channel || 'email',
+            text,
+            at: new Date().toISOString(),
+        });
+
+        const updatedDescription = JSON.stringify({
+            ...details,
+            messages,
+        });
+
+        const { data, error } = await supabase
+            .from('activities')
+            .update({ description: updatedDescription })
+            .eq('id', req.params.id)
+            .select('*')
+            .single();
+
+        if (error || !data) {
+            throw error || new Error('Nachricht konnte nicht gespeichert werden');
+        }
+
+        res.json(mapOutreach(data));
+    } catch (err) {
+        res.status(500).json({ error: 'Nachricht konnte nicht gespeichert werden' });
+    }
+});
+
+router.post('/:id/auto-followup', async (req, res) => {
+    if (!ensureDb(res)) return;
+
+    try {
+        const { data: existing, error: existingError } = await supabase
+            .from('activities')
+            .select('*')
+            .eq('id', req.params.id)
+            .eq('type', 'outreach')
+            .single();
+
+        if (existingError || !existing) {
+            return res.status(404).json({ error: 'Outreach nicht gefunden' });
+        }
+
+        const details = parseDescription(existing.description);
+        const messages = Array.isArray(details.messages) ? details.messages : [];
+        const recipient = details.recipient || 'Interessent';
+        const followUpText = `Hallo ${recipient}, nur eine kurze Rückmeldung zu meiner letzten Nachricht. Wenn es passt, können wir direkt einen Termin abstimmen.`;
+
+        messages.push({
+            direction: 'outbound',
+            channel: details.channel || 'email',
+            text: followUpText,
+            automated: true,
+            at: new Date().toISOString(),
+        });
+
+        const updatedDescription = JSON.stringify({
+            ...details,
+            status: 'followup_sent',
+            messages,
+        });
+
+        const { data, error } = await supabase
+            .from('activities')
+            .update({
+                description: updatedDescription,
+                due_date: new Date().toISOString(),
+            })
+            .eq('id', req.params.id)
+            .select('*')
+            .single();
+
+        if (error || !data) {
+            throw error || new Error('Auto-Follow-up fehlgeschlagen');
+        }
+
+        res.json(mapOutreach(data));
+    } catch (err) {
+        res.status(500).json({ error: 'Auto-Follow-up fehlgeschlagen' });
     }
 });
 

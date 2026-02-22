@@ -7,20 +7,51 @@ const API = import.meta.env.VITE_API_URL || ''
 
 export default function Outreach() {
     const [drafts, setDrafts] = useState([])
+    const [templates, setTemplates] = useState([])
+    const [selectedTemplate, setSelectedTemplate] = useState('')
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState('all')
     const [sendingId, setSendingId] = useState(null)
+    const [creatingDraft, setCreatingDraft] = useState(false)
     const [sendStatus, setSendStatus] = useState({}) // { [id]: 'success' | 'error' | message }
 
     const token = localStorage.getItem('token')
     const headers = { Authorization: `Bearer ${token}` }
 
     useEffect(() => {
-        axios.get('/api/outreach', { headers })
-            .then(r => setDrafts(r.data))
+        Promise.all([
+            axios.get('/api/outreach', { headers }),
+            axios.get('/api/stitch/templates', { headers }).catch(() => ({ data: { templates: [] } })),
+        ])
+            .then(([outreachRes, templatesRes]) => {
+                setDrafts(outreachRes.data || [])
+                const templateList = templatesRes.data?.templates || []
+                setTemplates(Array.isArray(templateList) ? templateList : [])
+            })
             .catch(console.error)
             .finally(() => setLoading(false))
     }, [])
+
+    async function createDraftFromTemplate() {
+        if (!selectedTemplate) return
+        setCreatingDraft(true)
+        try {
+            const templateName = typeof selectedTemplate === 'string' ? selectedTemplate : selectedTemplate.name
+            const response = await axios.post('/api/outreach', {
+                templateName,
+                subject: `Outreach: ${templateName}`,
+                status: 'draft',
+            }, { headers })
+
+            setDrafts(prev => [response.data, ...prev])
+            setFilter('all')
+            setSelectedTemplate('')
+        } catch (err) {
+            console.error('Create draft from template failed:', err)
+        } finally {
+            setCreatingDraft(false)
+        }
+    }
 
     async function handleSend(draftId) {
         setSendingId(draftId)
@@ -50,6 +81,25 @@ export default function Outreach() {
                     <p className="text-gray-400 mt-1">„AI Guilt" E-Mail-Entwürfe & Versand</p>
                 </div>
                 <div className="flex items-center gap-3">
+                    <select
+                        value={selectedTemplate}
+                        onChange={(e) => setSelectedTemplate(e.target.value)}
+                        className="input-field min-w-[220px]"
+                    >
+                        <option value="">Vorlage auswählen (optional)</option>
+                        {templates.map((template, index) => {
+                            const value = typeof template === 'string' ? template : (template.name || template.id || `template-${index}`)
+                            const label = typeof template === 'string' ? template : (template.name || template.id || `Vorlage ${index + 1}`)
+                            return <option key={value} value={value}>{label}</option>
+                        })}
+                    </select>
+                    <button
+                        onClick={createDraftFromTemplate}
+                        disabled={!selectedTemplate || creatingDraft}
+                        className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {creatingDraft ? 'Erstelle...' : 'Aus Vorlage'}
+                    </button>
                     <span className="text-sm text-gray-500">{drafts.length} Entwürfe</span>
                 </div>
             </div>

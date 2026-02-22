@@ -10,8 +10,8 @@
 function calculateAuditScore({ gbpClaimed, reviewsResponded, aeoVisible, organicTrafficPct }) {
     const scores = {
         gbp: gbpClaimed ? 25 : 0,
-        reviews: reviewsResponded ? 25 : Math.floor(Math.random() * 15), // Simulated partial score
-        aeo: aeoVisible ? 30 : Math.floor(Math.random() * 10),
+        reviews: reviewsResponded ? 25 : 0,
+        aeo: aeoVisible ? 30 : 0,
         organic: Math.min(20, Math.round((organicTrafficPct / 100) * 20)),
     };
 

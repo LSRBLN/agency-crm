@@ -2,3 +2,9 @@ node_modules/
 dist/
 .env
 *.log
+
+# Local DB
+data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm

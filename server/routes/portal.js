@@ -7,7 +7,7 @@ const router = express.Router();
 router.get('/', auth, async (req, res) => {
     try {
         if (!supabase) {
-            return res.json(getDemoPortalData());
+            return res.status(503).json({ error: 'Datenbank nicht konfiguriert' });
         }
 
         const [contactsResult, auditsResult] = await Promise.all([
@@ -16,7 +16,7 @@ router.get('/', auth, async (req, res) => {
         ]);
 
         if (contactsResult.error || auditsResult.error) {
-            return res.json(getDemoPortalData());
+            return res.status(500).json({ error: 'Portal-Daten konnten nicht geladen werden' });
         }
 
         const contacts = contactsResult.data || [];
@@ -37,17 +37,8 @@ router.get('/', auth, async (req, res) => {
             averageScore,
         });
     } catch (err) {
-        res.json(getDemoPortalData());
+        res.status(500).json({ error: 'Portal-Daten konnten nicht geladen werden' });
     }
 });
-
-function getDemoPortalData() {
-    return {
-        totalLeads: 5,
-        totalAudits: 3,
-        highPriority: 2,
-        averageScore: 61.7,
-    };
-}
 
 module.exports = router;

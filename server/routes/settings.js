@@ -1,11 +1,20 @@
 const express = require('express');
 const auth = require('../middleware/auth');
 const { supabase } = require('../services/supabaseClient');
+const crypto = require('crypto');
 
 const router = express.Router();
 router.use(auth);
 
 const COMPANY_PROFILE_KEY = 'company_profile';
+const FEATURE_FLAGS_KEY = 'feature_flags';
+
+const DEFAULT_FEATURE_FLAGS = {
+    similarweb: false,
+    gridRank: true,
+    mapDashboard: true,
+    pageSpeedInsights: false,
+};
 const DEFAULT_COMPANY_PROFILE = {
     companyName: 'Mustermann Consulting',
     ownerName: 'Max Mustermann',
@@ -39,6 +48,30 @@ function parseJson(value) {
     } catch {
         return {};
     }
+}
+
+function normalizeFeatureFlags(input = {}) {
+    const raw = input && typeof input === 'object' ? input : {};
+    const merged = { ...DEFAULT_FEATURE_FLAGS, ...raw };
+    return {
+        similarweb: Boolean(merged.similarweb),
+        gridRank: Boolean(merged.gridRank),
+        mapDashboard: Boolean(merged.mapDashboard),
+        pageSpeedInsights: Boolean(merged.pageSpeedInsights),
+        updatedAt: new Date().toISOString(),
+    };
+}
+
+async function getUserSetting(userId, key) {
+    const { data, error } = await supabase
+        .from('user_settings')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('key', key)
+        .maybeSingle();
+
+    if (error) throw error;
+    return data || null;
 }
 
 function normalizeCompanyProfile(body = {}) {
@@ -134,6 +167,66 @@ router.put('/company-profile', async (req, res) => {
         res.json({ profile: merged });
     } catch (err) {
         res.status(500).json({ error: 'Firmendaten konnten nicht gespeichert werden' });
+    }
+});
+
+// Feature Flags (per user)
+router.get('/feature-flags', async (req, res) => {
+    if (!ensureDb(res)) return;
+
+    try {
+        const userId = req.userId;
+        if (!userId) return res.status(401).json({ error: 'Nicht authentifiziert' });
+
+        const record = await getUserSetting(userId, FEATURE_FLAGS_KEY);
+        const parsed = record?.value ? parseJson(record.value) : {};
+        const flags = normalizeFeatureFlags(parsed);
+        res.json({ flags });
+    } catch (err) {
+        res.status(500).json({ error: 'Feature Flags konnten nicht geladen werden' });
+    }
+});
+
+router.put('/feature-flags', async (req, res) => {
+    if (!ensureDb(res)) return;
+
+    try {
+        const userId = req.userId;
+        if (!userId) return res.status(401).json({ error: 'Nicht authentifiziert' });
+
+        const existing = await getUserSetting(userId, FEATURE_FLAGS_KEY);
+        const current = existing?.value ? parseJson(existing.value) : {};
+        const next = normalizeFeatureFlags({ ...current, ...(req.body?.flags || req.body || {}) });
+
+        if (!existing) {
+            const payload = {
+                id: crypto.randomUUID(),
+                user_id: userId,
+                key: FEATURE_FLAGS_KEY,
+                value: JSON.stringify(next),
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+            };
+
+            const { error } = await supabase
+                .from('user_settings')
+                .insert([payload]);
+
+            if (error) throw error;
+            return res.json({ flags: next });
+        }
+
+        const { error } = await supabase
+            .from('user_settings')
+            .update({ value: JSON.stringify(next), updated_at: new Date().toISOString() })
+            .eq('id', existing.id)
+            .eq('user_id', userId)
+            .eq('key', FEATURE_FLAGS_KEY);
+
+        if (error) throw error;
+        res.json({ flags: next });
+    } catch (err) {
+        res.status(500).json({ error: 'Feature Flags konnten nicht gespeichert werden' });
     }
 });
 
